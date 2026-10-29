@@ -1,0 +1,47 @@
+/* Recorrido virtual 360 en el detalle de la propiedad. */
+.tour360 { margin-bottom: 1rem; }
+/* Calificado con .tour360 porque Pannellum le pone height:100% a su propio
+   contenedor (.pnlm-container) y, sin un padre con altura, eso da 0. */
+.tour360 .tour360-visor {
+  width: 100%;
+  height: 420px;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: #241812;
+}
+.tour360-ayuda {
+  margin: .5rem 0 0;
+  font-size: 12px;
+  color: var(--text-muted);
+  text-align: center;
+}
+@media (max-width: 768px) { .tour360 .tour360-visor { height: 260px; } }
+
+/* Pestañas Fotos / Recorrido 360 sobre la galería del detalle. */
+.tour360-pestanas { display: flex; gap: .4rem; flex-wrap: wrap; margin-bottom: .75rem; }
+
+/* Varios ambientes: botones para saltar de uno a otro sobre el visor. */
+.tour360-ambientes { display: flex; gap: .4rem; flex-wrap: wrap; margin-bottom: .5rem; }
+/* Las puertas (hotspots de Pannellum) laten para que se note que se pueden tocar. */
+.tour360 .pnlm-hotspot.pnlm-scene {
+  border-radius: 50%;
+  animation: tour360-latido 1.6s ease-out infinite;
+}
+@keyframes tour360-latido {
+  from { box-shadow: 0 0 0 0 rgba(255, 255, 255, .8); }
+  to   { box-shadow: 0 0 0 14px rgba(255, 255, 255, 0); }
+}
+
+/* Editor: mira en el centro del visor para ubicar las puertas. */
+.tour360-marco { position: relative; }
+.tour360-mira {
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 28px; height: 28px;
+  margin: -14px 0 0 -14px;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, .5);
+  pointer-events: none;
+}
+.tour360-puertas { margin-top: .5rem; }

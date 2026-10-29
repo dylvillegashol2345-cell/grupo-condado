@@ -1,0 +1,3 @@
+/* Aviso RN3 del modal de propiedad (la base .aviso vive en extras.css). */
+.aviso-ok   { background: var(--success-bg); color: var(--success-fg); }
+.aviso-warn { background: #fff3e0;           color: #e65100; }

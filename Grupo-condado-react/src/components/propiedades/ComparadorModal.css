@@ -1,0 +1,3 @@
+/* Mejor valor de la fila (precio más bajo, mayor superficie) en el comparador. */
+.comparador-tabla .valor-mejor { font-weight: 700; }
+.comparador-tabla .valor-mejor::after { content: " ★"; color: #2e7d32; }
