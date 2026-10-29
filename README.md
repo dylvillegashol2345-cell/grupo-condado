@@ -100,7 +100,7 @@ Para compilar: `npm run build`. Para revisar el código: `npm run lint`.
 
 | Sección | Administrador | Agente | Cliente | Invitado |
 |---|---|---|---|---|
-| Buscar propiedades | Sí | Sí | | |
+| Buscar propiedades | Sí | Sí | Sí, desde el Catálogo | |
 | Catálogo | | | Sí | Sí |
 | Dashboard y reportes | Sí | Sí | | |
 | Propiedades y propietarios | Sí | Sí | | |
