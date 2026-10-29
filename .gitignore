@@ -1,0 +1,18 @@
+# Front (Vite)
+node_modules/
+dist/
+.env
+
+# API (Visual Studio / .NET)
+bin/
+obj/
+packages/
+.vs/
+*.user
+*.suo
+
+# Configuracion local que no se versiona
+secrets.config
+
+# Respaldos locales
+src-respaldo-*/
