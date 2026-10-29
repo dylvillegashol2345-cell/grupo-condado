@@ -1,0 +1,116 @@
+/* ============================================================
+   Complementos mínimos a styles.css.
+
+   styles.css es el del sitio original y se dejó intacto. Acá van
+   solo las piezas que aparecieron al pasar a React y que aquel no
+   contemplaba, usando siempre sus mismos tokens de color.
+   ============================================================ */
+
+/* El layout del original era una <aside> fija más un <main> con margen.
+   En React eso vive dentro de #root, que necesita ocupar todo el alto. */
+#root { min-height: 100vh; }
+
+.section-title {
+  font-size: .95rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 1rem;
+}
+
+/* Banda de error cuando la API no responde. El original solo mostraba
+   texto suelto en rojo dentro de cada sección. */
+.error-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  background: var(--error-bg);
+  color: var(--error-fg);
+  border: 1px solid var(--error-fg);
+  border-radius: var(--radius);
+  padding: .85rem 1.1rem;
+  font-size: 13.5px;
+  font-weight: 500;
+  margin-bottom: 1.25rem;
+}
+
+/* Spinner de carga de página completa. */
+.loader {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: .6rem;
+  padding: 3rem 0;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+/* Aviso de reglas de negocio dentro del modal de propiedad
+   (documentación completa / faltante). */
+.aviso {
+  border-radius: var(--radius);
+  padding: .7rem 1rem;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+/* Pie de ayuda debajo de los inputs de archivo. */
+.ayuda { display: block; margin-top: .25rem; font-size: 11px; color: var(--text-secondary); }
+
+/* Contador de caracteres de la descripción. */
+.contador { float: right; font-weight: 500; color: var(--text-muted); font-size: 11px; }
+
+/* Placeholder mientras carga Leaflet o Chart.js por CDN. */
+.mapa-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface-2);
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-lg);
+  color: var(--text-muted);
+  font-size: 13.5px;
+  min-height: 340px;
+}
+
+/* Rejilla de las cards del catálogo y de la gestión de propiedades. */
+.grid-propiedades {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+/* El contenedor de resultados del hero y del catálogo reutilizan la grilla
+   del original (#catalogoLista) cuando llevan ese id. */
+#gridResultados { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem; }
+
+
+
+/* Captcha propio del login: se dibuja como SVG en el navegador, sin servicios
+   externos, para que siga funcionando aunque no haya internet. */
+.captcha-fila { display: flex; align-items: center; gap: .5rem; margin-bottom: .5rem; }
+.captcha-imagen { line-height: 0; user-select: none; }
+.captcha-refrescar {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-muted);
+  cursor: pointer;
+}
+.captcha-refrescar:hover { color: var(--condado); border-color: var(--condado); }
+
+/* Casilla del reCAPTCHA en el login: se centra y achica un poco para que
+   entre en el ancho de la tarjeta sin desbordarla. */
+.recaptcha-caja { display: flex; justify-content: center; }
+@media (max-width: 420px) {
+  .recaptcha-caja > div { transform: scale(.87); transform-origin: center; }
+}
+
+/* Mis pagos / Cobros: selector de contrato junto al buscador */
+.pagos-filtro-contrato { width: auto; max-width: 360px; height: 34px; font-size: 13px; }
+@media (max-width: 600px) {
+  .tabla-search-bar:has(.pagos-filtro-contrato) { flex-wrap: wrap; }
+  .pagos-filtro-contrato { max-width: 100%; flex: 1 1 100%; }
+}
