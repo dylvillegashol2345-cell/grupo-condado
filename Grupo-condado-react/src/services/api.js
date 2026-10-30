@@ -1,4 +1,5 @@
-const API_URL = "http://localhost:56153/api";
+// Con VITE_API_URL=/api las llamadas pasan por el proxy de Vite
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:56153/api";
 
 export default API_URL;
 
@@ -12,7 +13,7 @@ export class ApiError extends Error {
 
 const MSG_SIN_API =
   "No se pudo conectar con la API. Verificá que el proyecto WebApi esté corriendo en " +
-  API_URL.replace("/api", "") + ".";
+  (API_URL.replace(/\/api$/, "") || "localhost:56153") + ".";
 
 async function request(path, { method = "GET", body } = {}) {
   let res;
