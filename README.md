@@ -42,7 +42,7 @@ cada parte del sistema. Los cambios posteriores se registran commit a commit.
 | Catálogo | Búsqueda de propiedades para clientes, con filtros y mapa |
 | Propietarios y Clientes | Gestión de las personas vinculadas a cada operación |
 | Operaciones | Ventas y alquileres, con las reglas de disponibilidad |
-| Contratos y Pagos | Generación de contratos de locación y compraventa, cuotas y cobros |
+| Contratos y Pagos | Contrato de locación y boleto de compraventa en PDF, y registro de cobros |
 | Consultas y Citas | Consultas que llegan desde la web y la app móvil, y agenda de visitas |
 | EcoMarket | Publicaciones de productos sustentables y mensajes entre usuarios |
 | Impacto ambiental | Indicadores: propiedades con paneles y aislamiento, CO₂ estimado ahorrado y artículos donados |
