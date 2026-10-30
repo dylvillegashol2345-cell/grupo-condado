@@ -82,10 +82,24 @@ npm run dev
 ```
 
 Se abre en `http://localhost:5173`. Antes, copiar `.env.example` como `.env` (tiene la clave
-pública del sitio de reCAPTCHA). Si la API está en otra dirección, se cambia en
-`src/services/api.js`.
+pública del sitio de reCAPTCHA). Si la API está en otra dirección, se indica ahí mismo con
+`VITE_API_URL`; si no se define, el frontend usa `http://localhost:56153/api`.
 
 Para compilar: `npm run build`. Para revisar el código: `npm run lint`.
+
+### 4. Entrar al sistema
+
+El script de la base crea una cuenta de cada rol, para poder probar los permisos:
+
+| Rol | Usuario | Contraseña |
+|---|---|---|
+| Administrador | `admin` | `admin123` |
+| Agente | `martin` | `martin123` |
+| Cliente | `cliente` | `cliente123` |
+
+Sin cuenta se puede entrar con **Entrar como invitado**, que solo ve el catálogo. Desde
+**Crear cuenta** cualquiera se registra, y esas cuentas quedan siempre con rol Cliente; para
+darle otro rol, un administrador lo hace desde Usuarios.
 
 ## Carpetas del frontend
 
