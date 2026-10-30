@@ -83,40 +83,6 @@ namespace WebApi.Models
             }
         }
 
-    public string RegistrarOperacion()
-        {
-            string resultado = "";
-
-            string sql = "SP_Operacion_Registrar";
-
-            using (SqlConnection cnn = new SqlConnection(connectionString))
-            {
-                SqlCommand cmd = new SqlCommand(sql, cnn);
-
-                cmd.CommandType = CommandType.StoredProcedure;
-
-                cmd.Parameters.Add("@Tipo", SqlDbType.NVarChar).Value = Tipo;
-                cmd.Parameters.Add("@IdCliente", SqlDbType.Int).Value = IdCliente;
-                cmd.Parameters.Add("@IdPropiedad", SqlDbType.Int).Value = IdPropiedad;
-                cmd.Parameters.Add("@IdUsuario", SqlDbType.Int).Value = IdUsuario;
-
-                SqlParameter output =
-                    new SqlParameter("@Resultado", SqlDbType.NVarChar, 200);
-
-                output.Direction = ParameterDirection.Output;
-
-                cmd.Parameters.Add(output);
-
-                cnn.Open();
-
-                cmd.ExecuteNonQuery();
-
-                resultado = output.Value.ToString();
-            }
-
-            return resultado;
-        }
-
         public void Editar()
         {
             string sql = "SP_Operacion_Update";

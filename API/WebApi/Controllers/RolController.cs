@@ -27,32 +27,5 @@ namespace WebApi.Controllers
             oRol.IdRol = id;
             return oRol.ListarPorId();
         }
-
-        // POST: api/Rol
-        public void Post([FromBody] Rol value)
-        {
-            Rol oRol = new Rol();
-            oRol.Nombre = value.Nombre;
-   
-            oRol.Guardar();
-        }
-
-        // PUT: api/Rol/5
-        public void Put(int id, [FromBody] Rol value)
-        {
-            Rol oRol = new Rol();
-            oRol.IdRol = value.IdRol;
-            oRol.Nombre = value.Nombre;
-
-            oRol.Editar();
-        }
-
-        // DELETE: api/Rol/5
-        public void Delete(int id)
-        {
-            Rol oRol = new Rol();
-            oRol.IdRol = id;
-            oRol.Eliminar();
-        }
     }
 }

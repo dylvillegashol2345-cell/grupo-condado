@@ -110,7 +110,7 @@ namespace WebApi.Models
 
         public void Eliminar()
         {
-            string sql = "SP_Propietario_Delete";
+            string sql = "SP_Usuario_Delete";
             using (SqlConnection cnn = new SqlConnection(connectionString))
             {
                 SqlCommand cmd = new SqlCommand(sql, cnn);
