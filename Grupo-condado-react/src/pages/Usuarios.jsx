@@ -5,6 +5,7 @@ import { useAuth } from "../context/authContext";
 import { useUI } from "../context/uiContext";
 import { ROLES } from "../utils/catalogos";
 import EmptyState from "../components/common/EmptyState";
+import UsuarioModal from "../components/usuarios/UsuarioModal";
 
 const COLOR_ROL = { Administrador: "#6c2d20", Agente: "#1565c0", Cliente: "#2e7d32" };
 
@@ -13,6 +14,7 @@ function Usuarios() {
   const { toast, confirmar } = useUI();
   const [busqueda, setBusqueda] = useState(null);
   const [ocupado, setOcupado] = useState(null);
+  const [creando, setCreando] = useState(false);
 
   const { datos, cargando, error, recargar } = useCarga(
     async () => (await usuarios.listar()).sort((a, b) => a.IdUsuario - b.IdUsuario),
@@ -127,12 +129,17 @@ function Usuarios() {
     <section className="card-ghost mt-3" id="usuariosAdmin">
       <div className="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
         <h5 className="mb-0"><i className="fa fa-users-cog me-2" />Gestión de Usuarios</h5>
-        <button className="btn btn-condado btn-sm" onClick={recargar}>
-          <i className="fa fa-sync me-1" />Actualizar
-        </button>
+        <div className="d-flex gap-2">
+          <button className="btn btn-light btn-sm" onClick={recargar}>
+            <i className="fa fa-sync me-1" />Actualizar
+          </button>
+          <button className="btn btn-condado btn-sm" onClick={() => setCreando(true)}>
+            <i className="fa fa-user-plus me-1" />Nuevo usuario
+          </button>
+        </div>
       </div>
       <p className="text-muted" style={{ fontSize: 13, marginBottom: "1.25rem" }}>
-        Administrá los usuarios del sistema: cambiá roles o eliminá cuentas inactivas.
+        Administrá los usuarios del sistema: creá cuentas, cambiá roles o eliminá cuentas inactivas.
       </p>
       <div className="tabla-search-bar">
         <div className="tabla-search-input">
@@ -164,6 +171,9 @@ function Usuarios() {
           <tbody id="listadoUsuarios">{filas}</tbody>
         </table>
       </div>
+      {creando && (
+        <UsuarioModal onCerrar={() => setCreando(false)} onCreado={recargar} />
+      )}
     </section>
   );
 }

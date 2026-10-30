@@ -23,13 +23,13 @@ export async function login(nombre, contrasena, captchaToken) {
   return filas.length ? filas[0] : null;
 }
 
-export function registrar({ nombre, email, telefono, contrasena }) {
+export function registrar({ nombre, email, telefono, contrasena, rol = "Cliente" }) {
   return api.post("/Usuario", {
     Nombre: nombre,
     Email: email,
     Telefono: telefono,
     Contrasena: contrasena,
-    IdRol: ROL_A_ID.Cliente,
+    IdRol: ROL_A_ID[rol] || ROL_A_ID.Cliente,
   });
 }
 
