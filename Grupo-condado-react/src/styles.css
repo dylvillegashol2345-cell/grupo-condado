@@ -2440,7 +2440,8 @@ section.card-ghost > h6 {
   transition: border-color .15s;
 }
 .calc-cuotas-input:focus-within { border-color: var(--condado); }
-.calc-cuotas-input input {
+.calc-cuotas-input input,
+.calc-cuotas-input select {
   flex: 1;
   width: 100%;
   min-width: 0;

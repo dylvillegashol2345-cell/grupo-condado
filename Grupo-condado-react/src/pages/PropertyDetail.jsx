@@ -15,9 +15,9 @@ import ModalDebeLoguear from "../components/propiedades/ModalDebeLoguear";
 import EcoBadge from "../components/common/EcoBadge";
 import ErrorBanner from "../components/common/ErrorBanner";
 import { Spinner } from "../components/common/Loader";
-import CalculadoraCuotas from "../components/propiedades/CalculadoraCuotas";
+import CalculadoraHonorarios from "../components/propiedades/CalculadoraHonorarios";
 import { useUI } from "../context/uiContext";
-import { CREDITO_DEFECTO, simularCredito } from "../utils/credito";
+import { HONORARIOS_DEFECTO, calcularHonorarios } from "../utils/honorarios";
 import { abrirFichaPropiedad } from "../utils/fichaPropiedad";
 import { obtenerCotizacion } from "../utils/cotizacion";
 import { mensajeWhatsApp, linkWhatsApp } from "../utils/compartir";
@@ -61,7 +61,7 @@ function PropertyDetail() {
   const [pedirLogin, setPedirLogin] = useState(false);
   const [vistaMedia, setVistaMedia] = useState("fotos");
   const { toast } = useUI();
-  const [credito, setCredito] = useState(CREDITO_DEFECTO);
+  const [honorarios, setHonorarios] = useState(HONORARIOS_DEFECTO);
   const [dolar, setDolar] = useState(null);
   useEffect(() => {
     let vivo = true;
@@ -115,7 +115,10 @@ function PropertyDetail() {
 
   function descargarFicha() {
     try {
-      abrirFichaPropiedad({ p, fotos, caracteristicas, servicios, credito, simulacion: simularCredito(p.precioNum, credito) });
+      abrirFichaPropiedad({
+        p, fotos, caracteristicas, servicios,
+        honorarios: invitado ? null : { ...honorarios, ...calcularHonorarios(p.precioNum, honorarios) },
+      });
     } catch (err) {
       toast(err.message, "error");
     }
@@ -330,15 +333,17 @@ function PropertyDetail() {
           </div>
         </div>
 
-        <div className="detalle-v2-mapa-section">
-          <h3 className="detalle-v2-similares-titulo">
-            <i className="fa fa-calculator me-2" style={{ color: "var(--condado)" }} />Calculadora de cuotas
-          </h3>
-          <p style={{ fontSize: 13, color: "var(--text-muted)", marginBottom: "1rem" }}>
-            Simulá un crédito hipotecario para esta propiedad. Lo que cargues acá también sale en la ficha PDF.
-          </p>
-          <CalculadoraCuotas precio={p.precioNum} moneda={p.moneda} valores={credito} onCambiar={setCredito} dolar={dolar} />
-        </div>
+        {!invitado && (
+          <div className="detalle-v2-mapa-section">
+            <h3 className="detalle-v2-similares-titulo">
+              <i className="fa fa-calculator me-2" style={{ color: "var(--condado)" }} />Honorarios de la inmobiliaria
+            </h3>
+            <p style={{ fontSize: 13, color: "var(--text-muted)", marginBottom: "1rem" }}>
+              Calculá la comisión de Grupo Condado por la venta o el alquiler, en 1 a 3 cuotas. Lo que cargues acá también sale en la ficha PDF.
+            </p>
+            <CalculadoraHonorarios precio={p.precioNum} moneda={p.moneda} valores={honorarios} onCambiar={setHonorarios} dolar={dolar} />
+          </div>
+        )}
 
         <div className="detalle-v2-mapa-section">
           <h3 className="detalle-v2-similares-titulo">

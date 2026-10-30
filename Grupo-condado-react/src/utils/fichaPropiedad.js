@@ -39,7 +39,7 @@ const ESTILOS = `
   @media print { .barra { display: none; } body { background: white; } #documento { margin: 0; box-shadow: none; } }
 `;
 
-function htmlFicha({ p, fotos, caracteristicas, servicios, simulacion, credito }) {
+function htmlFicha({ p, fotos, caracteristicas, servicios, honorarios }) {
   const [principal, ...resto] = fotos.map(absoluta);
   const ambientes = leerTour(p.tour360).filter((s) => s.imagen).length;
   const datos = [
@@ -91,16 +91,16 @@ function htmlFicha({ p, fotos, caracteristicas, servicios, simulacion, credito }
       </p>
     </div>
 
-    ${simulacion.cuota > 0 ? `
+    ${honorarios && honorarios.total > 0 ? `
     <div class="bloque">
-      <h2>Simulación de crédito</h2>
+      <h2>Honorarios de la inmobiliaria</h2>
       <div class="credito">
-        <div class="dato"><span>Anticipo (${e(credito.anticipoPct)}%)</span><b>${e(importe(simulacion.anticipo, p.moneda))}</b></div>
-        <div class="dato"><span>A financiar</span><b>${e(importe(simulacion.financiado, p.moneda))}</b></div>
-        <div class="dato"><span>Plazo · TNA</span><b>${e(credito.anios)} años · ${e(credito.tnaPct)}%</b></div>
-        <div class="dato cuota"><span>Cuota mensual</span><b>${e(importe(simulacion.cuota, p.moneda))}</b></div>
+        <div class="dato"><span>Operación</span><b>${e(honorarios.operacion)} · ${e(honorarios.pct)}%</b></div>
+        <div class="dato"><span>${honorarios.operacion === "Alquiler" ? "Total del contrato" : "Precio"}</span><b>${e(importe(honorarios.base, honorarios.operacion === "Alquiler" ? "ARS" : p.moneda))}</b></div>
+        <div class="dato"><span>Honorarios totales</span><b>${e(importe(honorarios.total, honorarios.operacion === "Alquiler" ? "ARS" : p.moneda))}</b></div>
+        <div class="dato cuota"><span>${honorarios.cuotas === 1 ? "Un pago" : `${honorarios.cuotas} cuotas de`}</span><b>${e(importe(honorarios.cuota, honorarios.operacion === "Alquiler" ? "ARS" : p.moneda))}</b></div>
       </div>
-      <p class="aviso">Simulación orientativa con sistema francés. No incluye seguros, gastos ni ajuste por UVA; las condiciones reales las define cada banco.</p>
+      <p class="aviso">Comisión de Grupo Condado: ${e(honorarios.pct)}% ${honorarios.operacion === "Alquiler" ? "del total del contrato" : "del precio"}, en 1 a 3 cuotas.</p>
     </div>` : ""}
 
     <div class="pie">
