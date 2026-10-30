@@ -16,7 +16,7 @@ import ErrorBanner from "../components/common/ErrorBanner";
 import BotonRecordar from "../components/citas/BotonRecordar";
 import { ESTADOS_CITA, proximasCitas, etiquetaDia, direccionCita, fechaISO } from "../utils/citas";
 import { tipoLabel, localidadLabel, LOCALIDADES, LOCALIDADES_ORDENADAS } from "../utils/catalogos";
-import { fechaCorta, fechaLocal, diasRestantes } from "../utils/format";
+import { direccion, fechaCorta, fechaLocal, diasRestantes } from "../utils/format";
 import { TIPOS_DOLAR, obtenerCotizacion, convertir, importe, importeCorto } from "../utils/cotizacion";
 
 const PAL = ["#6c2d20", "#1565c0", "#2e7d32", "#e65100", "#6a1b9a", "#00838f", "#f9a825", "#37474f"];
@@ -906,7 +906,7 @@ function Dashboard() {
                   <div className="dash-top-prop" key={p.IdPropiedad}>
                     <div className="dash-top-prop-rank" style={{ background: RANK_COLORES[i] }}>{i + 1}</div>
                     <div className="dash-top-prop-info">
-                      <strong>{p.Barrio || "—"} · {p.Calle || ""}</strong>
+                      <strong>{direccion(p.Barrio, p.Calle, p.Numeracion) || "—"}</strong>
                       <span>{tipoLabel(p.IdTipo)} · {p.Estado}</span>
                     </div>
                     <div className="dash-top-prop-pct">
@@ -950,7 +950,7 @@ function Dashboard() {
                       return (
                         <tr key={o.IdOperacion}>
                           <td><span className={`dash-tx-badge dash-tx-${(o.Tipo || "").toLowerCase()}`}>{o.Tipo || "—"}</span></td>
-                          <td>{prop ? `${prop.Barrio} · ${prop.Calle}` : "—"}</td>
+                          <td>{prop ? direccion(prop.Barrio, prop.Calle, prop.Numeracion) : "—"}</td>
                           <td>{fechaCorta(o.Fecha)}</td>
                           <td><span style={{ color: "#2e7d32", fontSize: 12, fontWeight: 600 }}>Completada</span></td>
                         </tr>

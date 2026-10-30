@@ -5,6 +5,7 @@ import { useCarga } from "../hooks/useCarga";
 import { useAuth } from "../context/authContext";
 import { useDatosCitas } from "../hooks/useDatosCitas";
 import { citaDesdeConsulta, etiquetaPropiedad, propiedadDeConsulta, ESTADOS_CITA } from "../utils/citas";
+import { fechaCorta } from "../utils/format";
 import EmptyState from "../components/common/EmptyState";
 import CitaModal from "../components/citas/CitaModal";
 
@@ -103,7 +104,7 @@ function Consultas() {
                   <td>{c.Telefono || "—"}</td>
                   <td>{propiedadTexto(c)}</td>
                   <td style={{ maxWidth: 300, whiteSpace: "normal" }}>{c.Mensaje || ""}</td>
-                  <td style={{ whiteSpace: "nowrap" }}>{c.Fecha ? String(c.Fecha).split("T")[0] : "—"}</td>
+                  <td style={{ whiteSpace: "nowrap" }}>{fechaCorta(c.Fecha)}</td>
                   <td style={{ whiteSpace: "nowrap" }}>{celdaCita(c)}</td>
                 </tr>
               ))}

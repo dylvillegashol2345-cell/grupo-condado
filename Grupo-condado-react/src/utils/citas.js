@@ -1,3 +1,5 @@
+import { direccion } from "./format.js";
+
 export const ESTADOS_CITA = {
   Pendiente:  { color: "#e65100", bg: "#fff3e0", icono: "fa-clock" },
   Confirmada: { color: "#1565c0", bg: "#e3f2fd", icono: "fa-check" },
@@ -25,13 +27,14 @@ export function semanasDelMes(anio, mes) {
   return semanas;
 }
 
-export const etiquetaPropiedad = (p) => `${p.type} en ${p.barrio} · ${p.calle} ${p.numeracion}`.trim();
+export const etiquetaPropiedad = (p) => `${p.type} en ${direccion(p.barrio, p.calle, p.numeracion)}`;
 
 export function propiedadDeConsulta(texto, propiedades) {
   const t = String(texto || "").trim();
   if (!t) return null;
   if (/^\d+$/.test(t)) return propiedades.find((p) => String(p.id) === t) || null;
-  const norm = (s) => s.toLowerCase().replace(/\s+/g, " ").trim();
+  // Las consultas viejas de propiedades sin calle terminan en " ·"
+  const norm = (s) => s.toLowerCase().replace(/\s+/g, " ").replace(/\s*·\s*$/, "").trim();
   return propiedades.find((p) => norm(etiquetaPropiedad(p)) === norm(t)) || null;
 }
 
@@ -59,6 +62,14 @@ export function citaDesdeConsulta(consulta, propiedades, clientes = []) {
   };
 }
 
+// Una visita ocupa al agente una hora: dos citas suyas tienen que estar al menos así de separadas
+export const DURACION_CITA_MIN = 60;
+
+const minutos = (hora) => {
+  const [h, m] = String(hora).split(":").map(Number);
+  return h * 60 + (m || 0);
+};
+
 export function validarCita(c, citas, hoy = fechaISO()) {
   if (!c.Fecha) return "Elegí el día de la cita.";
   if (!c.Hora) return "Elegí la hora de la cita.";
@@ -67,8 +78,9 @@ export function validarCita(c, citas, hoy = fechaISO()) {
   if (!c.IdCita && c.Fecha < hoy) return "No se puede agendar una cita en una fecha pasada.";
   if (c.IdUsuario && c.Estado !== "Cancelada") {
     const choque = citas.find((o) => o.IdCita !== c.IdCita && o.Estado !== "Cancelada"
-      && String(o.IdUsuario) === String(c.IdUsuario) && o.Fecha === c.Fecha && o.Hora === c.Hora);
-    if (choque) return `${choque.Agente || "Ese agente"} ya tiene una cita el ${c.Fecha.split("-").reverse().join("/")} a las ${c.Hora}.`;
+      && String(o.IdUsuario) === String(c.IdUsuario) && o.Fecha === c.Fecha
+      && Math.abs(minutos(o.Hora) - minutos(c.Hora)) < DURACION_CITA_MIN);
+    if (choque) return `${choque.Agente || "Ese agente"} ya tiene una cita el ${c.Fecha.split("-").reverse().join("/")} a las ${String(choque.Hora).slice(0, 5)}. Las visitas duran una hora.`;
   }
   return null;
 }

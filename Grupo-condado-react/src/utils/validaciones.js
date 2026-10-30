@@ -1,5 +1,4 @@
 export const SOLO_LETRAS  = /^[a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]+$/;
-export const EMAIL_GMAIL  = /^[^\s@]+@gmail\.com$/i;
 export const EMAIL_LIBRE  = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export const REGLAS_DOCUMENTO = {
@@ -30,7 +29,7 @@ export function validarPropietario(body, otros = [], idActual = null) {
       !SOLO_LETRAS.test(body.Nombre.trim()))                      return "El nombre solo puede contener letras";
   if (!String(body.Apellido || "").trim() ||
       !SOLO_LETRAS.test(body.Apellido.trim()))                    return "El apellido solo puede contener letras";
-  if (!EMAIL_GMAIL.test(String(body.Email || "")))                return "El email debe tener el formato nombre@gmail.com";
+  if (!EMAIL_LIBRE.test(String(body.Email || "")))                return "Ingresá un email válido";
   if (!String(body.Calle || "").trim() ||
       !SOLO_LETRAS.test(body.Calle.trim()))                       return "La calle solo puede contener letras";
   if (!/^\d+$/.test(String(body.Numeracion || "").trim()))        return "La numeración solo puede contener números";
@@ -94,8 +93,8 @@ export function validarConsulta({ nombre, telefono, mensaje }) {
 
 export function validarRegistro({ nombre, email, telefono, pass, passConfirm }) {
   if (!String(nombre || "").trim())              return "Ingresá tu nombre";
-  if (!EMAIL_GMAIL.test(String(email || "")))    return "El email debe tener el formato nombre@gmail.com";
-  if (!/^\d{11}$/.test(String(telefono || "")))  return "El teléfono debe tener 11 dígitos después del +54";
+  if (!EMAIL_LIBRE.test(String(email || "")))    return "Ingresá un email válido";
+  if (!/^\d{10}$/.test(String(telefono || "")))  return "El teléfono debe tener 10 dígitos: código de área y número, sin el 0 ni el 15";
   if (String(pass || "").length < 6)             return "La contraseña debe tener al menos 6 caracteres";
   if (pass !== passConfirm)                      return "Las contraseñas no coinciden";
   return null;

@@ -64,7 +64,7 @@ function Propiedades() {
   const lista = useMemo(() => datos || [], [datos]);
   const enComparacion = useMemo(() => lista.filter((p) => idsCmp.includes(p.id)), [lista, idsCmp]);
 
-  const filtradas = useMemo(() => ordenar(filtrarCatalogo(lista, filtros), orden, dolar), [lista, filtros, orden, dolar]);
+  const filtradas = useMemo(() => ordenar(filtrarCatalogo(lista, filtros, dolar), orden, dolar), [lista, filtros, orden, dolar]);
   const activos = contarFiltrosActivos(filtros);
 
   function limpiarFiltros() {

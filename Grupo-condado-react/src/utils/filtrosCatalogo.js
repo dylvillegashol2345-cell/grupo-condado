@@ -46,16 +46,18 @@ function cumpleDormitorios(caract, valor) {
 
 const normalizar = (t) => String(t || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 
-export function filtrarCatalogo(lista, f) {
+// El rango de precio está en pesos: los precios en dólares se convierten con la cotización
+export function filtrarCatalogo(lista, f, cotizacion) {
   const texto = normalizar(f.texto).trim();
   return lista.filter((p) => {
+    const precio = convertir(p.precioNum, p.moneda, "ARS", cotizacion);
     if (texto && !normalizar([p.title, p.localidad, p.type, p.estado].join(" ")).includes(texto)) return false;
     if (f.tipo && p.type !== f.tipo) return false;
     if (f.eco && p.categoriaEco !== f.eco) return false;
     if (f.estado && p.estado !== f.estado) return false;
     if (f.localidad && String(p.localidadId) !== String(f.localidad)) return false;
-    if (p.precioNum < f.precioMin) return false;
-    if (f.precioMax < PRECIO_MAX && p.precioNum > f.precioMax) return false;
+    if (precio < f.precioMin) return false;
+    if (f.precioMax < PRECIO_MAX && precio > f.precioMax) return false;
     if (Number(p.surface || 0) < f.supMin) return false;
     if (f.supMax < SUP_MAX && Number(p.surface || 0) > f.supMax) return false;
     if (f.paneles && !p.paneles) return false;

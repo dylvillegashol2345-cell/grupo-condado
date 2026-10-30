@@ -104,7 +104,7 @@ Para compilar: `npm run build`. Para revisar el código: `npm run lint`.
 | Catálogo | | | Sí | Sí |
 | Dashboard y reportes | Sí | Sí | | |
 | Propiedades y propietarios | Sí | Sí | | |
-| Clientes | Sí | | | |
+| Clientes | Sí | Sí | | |
 | Operaciones | Sí | Sí | | |
 | Contratos y cobros | Sí | Sí | Solo los suyos | |
 | Consultas y citas | Sí | Sí | | |
@@ -122,7 +122,7 @@ Están en `Grupo-condado-react/src/utils/reglas.js`:
 
 - RN1: la clase energética sale de paneles solares y aislamiento (los dos: A, uno: B, ninguno: C).
 - RN2: las propiedades clase A tienen 15% de bonificación.
-- RN3: el formulario avisa si falta la matrícula o el título.
+- RN3: una propiedad se publica solo si tiene matrícula y título; si falta alguno, queda guardada sin publicar.
 - RN4: no se puede registrar una operación sobre una propiedad que no está disponible.
 - RN5: al registrar la operación, la propiedad pasa a Vendida o Alquilada.
 

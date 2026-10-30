@@ -49,7 +49,7 @@ function Chips({ opciones, valor, onElegir }) {
   );
 }
 
-function CatalogoFiltros({ filtros, onChange, cantidad, mostrarResumen, onAplicarAlMapa, onLimpiar }) {
+function CatalogoFiltros({ filtros, onChange, cantidad, mostrarResumen, onAplicarAlMapa, onLimpiar, mostrarEstado = true }) {
   function set(cambios) {
     onChange({ ...filtros, ...cambios });
   }
@@ -150,10 +150,12 @@ function CatalogoFiltros({ filtros, onChange, cantidad, mostrarResumen, onAplica
           <Chips opciones={CHIPS_DORMITORIOS} valor={filtros.dormitorios} onElegir={(v) => set({ dormitorios: v })} />
         </div>
 
-        <div className="catalogo-filtro-grupo">
-          <label className="catalogo-filtro-label"><i className="fa fa-tag me-1" />Estado</label>
-          <Chips opciones={CHIPS_ESTADO} valor={filtros.estado} onElegir={(v) => set({ estado: v })} />
-        </div>
+        {mostrarEstado && (
+          <div className="catalogo-filtro-grupo">
+            <label className="catalogo-filtro-label"><i className="fa fa-tag me-1" />Estado</label>
+            <Chips opciones={CHIPS_ESTADO} valor={filtros.estado} onElegir={(v) => set({ estado: v })} />
+          </div>
+        )}
 
         <div className="catalogo-filtro-grupo">
           <label className="catalogo-filtro-label"><i className="fa fa-sun me-1" />Características</label>

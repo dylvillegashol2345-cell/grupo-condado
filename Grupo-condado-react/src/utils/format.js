@@ -7,13 +7,19 @@ export function precio(valor, moneda) {
   return signo + Number(valor || 0).toLocaleString("es-AR");
 }
 
+// "Barrio · Calle 123", sin el punto suelto si falta la calle
+export function direccion(barrio, calle, numeracion) {
+  return [barrio, `${calle || ""} ${numeracion || ""}`.trim()].filter(Boolean).join(" · ");
+}
+
 export function numero(valor) {
   return Number(valor || 0).toLocaleString("es-AR");
 }
 
 export function fechaCorta(valor) {
   if (!valor) return "—";
-  return String(valor).split("T")[0];
+  const [a, m, d] = String(valor).split("T")[0].split("-");
+  return d ? `${d}/${m}/${a}` : String(valor);
 }
 
 export function fechaLarga(valor) {

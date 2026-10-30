@@ -25,6 +25,7 @@ import { useUI } from "../../context/uiContext";
 import { useActividad } from "../../context/actividadContext";
 import { normalizarImagen } from "../../utils/imagenes";
 import { limpiarTour } from "../../utils/tour360";
+import { direccion } from "../../utils/format";
 import "./propiedades.css";
 
 const VACIO = {
@@ -226,9 +227,10 @@ function PropiedadModal({ propiedad, onCerrar, onGuardado }) {
       CategoriaEco: clase,
       Bonificacion: bonificacion,
       Servicios: serializarServicios(servicios),
-      MatriculaVerificada: editando ? true : Boolean(archivos.matricula),
-      TituloPropiedad: editando ? true : Boolean(archivos.titulo),
-      Publicada: true,
+      MatriculaVerificada: Boolean(archivos.matricula || propiedad?.MatriculaVerificada),
+      TituloPropiedad: Boolean(archivos.titulo || propiedad?.TituloPropiedad),
+      // RN3: se publica solo con matrícula y título
+      Publicada: docsCompletos,
     };
 
     const problema = validarPropiedad(body) || (!body.IdPropietario && "Debe seleccionar el propietario del inmueble");
@@ -254,7 +256,7 @@ function PropiedadModal({ propiedad, onCerrar, onGuardado }) {
       } else {
         const res = await propiedades.crear(body);
         idPropiedad = primeraFila(res)?.IdPropiedad || null;
-        registrar("Propiedad publicada", `${body.Barrio} · ${body.Calle}`.trim(), "fa-building");
+        registrar("Propiedad publicada", direccion(body.Barrio, body.Calle, body.Numeracion), "fa-building");
       }
 
       if (idPropiedad) {

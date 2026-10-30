@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { ordenar } from "./filtrosCatalogo.js";
+import { FILTROS_CATALOGO_VACIOS, filtrarCatalogo, ordenar } from "./filtrosCatalogo.js";
 
 const p = (id, precioNum, moneda, surface) => ({ id, precioNum, moneda, surface });
 const lista = [p(1, 500000, "ARS", 90), p(2, 250000, "USD", 180), p(3, 150000, "ARS", 0)];
@@ -14,5 +14,9 @@ assert.deepEqual(ids(ordenar(lista, "sup_desc")), [2, 1, 3]);
 assert.deepEqual(ids(ordenar(lista, "recientes")), [3, 2, 1]);
 assert.deepEqual(ids(ordenar(lista, "")), [1, 2, 3]);   // Sin orden, como vino
 assert.deepEqual(ids(lista), [1, 2, 3]);
+
+// Rango de precio en pesos: USD 250.000 con el dólar a 1000 no entra en "hasta $1.000.000"
+const hastaUnMillon = { ...FILTROS_CATALOGO_VACIOS, precioMax: 1000000 };
+assert.deepEqual(ids(filtrarCatalogo(lista, hastaUnMillon, 1000)), [1, 3]);
 
 console.log("filtrosCatalogo OK");

@@ -3,6 +3,7 @@ import Modal from "../common/Modal";
 import EcoBadge from "../common/EcoBadge";
 import { IMG_PROPIEDAD_FALLBACK } from "../../utils/catalogos";
 import { mejoresDe, esMejor } from "../../utils/comparador";
+import { direccion } from "../../utils/format";
 import "./ComparadorModal.css";
 
 const BADGE_ESTADO = {
@@ -17,7 +18,7 @@ const FILAS = [
   { label: "Foto", render: (p) => (
     <img src={p.image || IMG_PROPIEDAD_FALLBACK} alt="" style={{ width: "100%", height: 120, objectFit: "cover", borderRadius: 8 }} />
   ) },
-  { label: "Dirección", render: (p) => `${p.barrio} · ${p.calle} ${p.numeracion}`.trim() },
+  { label: "Dirección", render: (p) => direccion(p.barrio, p.calle, p.numeracion) },
   { label: "Localidad", render: (p) => p.localidad },
   { label: "Tipo",      render: (p) => p.type },
   { label: "Estado",    render: (p) => {

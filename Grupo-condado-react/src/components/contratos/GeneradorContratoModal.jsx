@@ -85,7 +85,7 @@ const COLS_PARTE = [
 const COLS_CONTACTO = [
   ...COLS_PARTE,
   { clave: "tel", label: "Teléfono", placeholder: "3516666083", ancho: 110, filtro: telefonoCompleto, max: 14, inputMode: "tel" },
-  { clave: "email", label: "Email", placeholder: "nombre@gmail.com", ancho: 160, filtro: email, max: 100, tipo: "email" },
+  { clave: "email", label: "Email", placeholder: "nombre@correo.com", ancho: 160, filtro: email, max: 100, tipo: "email" },
 ];
 const COLS_GARANTE = [
   ...COLS_CONTACTO,

@@ -210,8 +210,8 @@ function Contratos() {
     const venta = tipoAlta === "Venta";
     const body = venta ? formAVenta(formVenta, idOperacion) : formAContrato(form, idOperacion);
     if (!body.IdOperacion) { toast("❌ Seleccioná una operación", "error"); return; }
-    if (!body.FechaInicio) { toast("❌ Ingresá la fecha de inicio", "error"); return; }
-    if (!body.FechaFin) { toast("❌ Ingresá la fecha de fin", "error"); return; }
+    if (!body.FechaInicio) { toast(venta ? "❌ Ingresá la fecha de firma" : "❌ Ingresá la fecha de inicio", "error"); return; }
+    if (!body.FechaFin) { toast(venta ? "❌ Ingresá la fecha de escrituración" : "❌ Ingresá la fecha de vencimiento", "error"); return; }
     const problema = venta
       ? validarContratoVenta({ ...formVenta, IdOperacion: body.IdOperacion, PrecioTotal: Number(formVenta.PrecioTotal) || 0 })
       : validarContrato(body);

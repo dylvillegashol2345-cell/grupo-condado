@@ -1,5 +1,5 @@
 import { clienteDelUsuario } from "./privacidad";
-import { fechaInput } from "./format";
+import { direccion, fechaInput } from "./format";
 
 export const CONTRATO_VACIO = {
   LocadorNombre: "", LocadorDni: "", LocadorDomicilio: "",
@@ -134,9 +134,9 @@ export function formatDireccion(p) {
   if (p.Manzana || p.Lote) {
     const mz = p.Manzana ? `Mz ${p.Manzana}` : "";
     const lote = p.Lote ? `Lote ${p.Lote}` : "";
-    return `${p.Barrio || ""} · ${[mz, lote].filter(Boolean).join(" · ")}${piso}${depto}`;
+    return [p.Barrio, mz, lote].filter(Boolean).join(" · ") + piso + depto;
   }
-  return `${p.Barrio || ""} · ${p.Calle || ""} ${p.Numeracion || ""}${piso}${depto}`.trim();
+  return direccion(p.Barrio, p.Calle, p.Numeracion) + piso + depto;
 }
 
 export function contratosConOperacion(contratos, operaciones) {

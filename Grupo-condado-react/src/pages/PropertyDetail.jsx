@@ -21,6 +21,7 @@ import { HONORARIOS_DEFECTO, calcularHonorarios } from "../utils/honorarios";
 import { abrirFichaPropiedad } from "../utils/fichaPropiedad";
 import { obtenerCotizacion } from "../utils/cotizacion";
 import { mensajeWhatsApp, linkWhatsApp } from "../utils/compartir";
+import { etiquetaPropiedad } from "../utils/citas";
 
 const BADGE_ESTADO = {
   Disponible: { bg: "#e8f5e9", color: "#2e7d32" },
@@ -126,7 +127,7 @@ function PropertyDetail() {
 
   function consultar() {
     if (invitado) { setPedirLogin(true); return; }
-    const label = `${p.type} en ${p.barrio} · ${p.calle} ${p.numeracion}`;
+    const label = etiquetaPropiedad(p);
     navigate(`/app/consulta?propiedad=${encodeURIComponent(label)}&desde=detalle`);
   }
 

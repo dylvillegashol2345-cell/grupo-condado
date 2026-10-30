@@ -125,7 +125,7 @@ function Login() {
       await registrar({
         nombre: reg.nombre.trim(),
         email: reg.email.trim(),
-        telefono: "+54" + reg.telefono,
+        telefono: "+549" + reg.telefono,
         contrasena: reg.pass,
       });
       setMsgReg({ tipo: "ok", texto: "Cuenta creada. Ya podés iniciar sesión." });
@@ -310,11 +310,11 @@ function Login() {
               </div>
 
               <div className="login-field">
-                <label className="login-label"><i className="fa fa-envelope me-1" />Gmail</label>
+                <label className="login-label"><i className="fa fa-envelope me-1" />Email</label>
                 <input
                   type="email"
                   className="form-control login-input"
-                  placeholder="nombre@gmail.com"
+                  placeholder="nombre@correo.com"
                   value={reg.email}
                   onChange={(e) => setReg({ ...reg, email: email(e.target.value) })}
                 />
@@ -323,14 +323,14 @@ function Login() {
               <div className="login-field">
                 <label className="login-label"><i className="fa fa-phone me-1" />Teléfono</label>
                 <div className="input-group">
-                  <span className="input-group-text login-prefix">+54</span>
+                  <span className="input-group-text login-prefix">+54 9</span>
                   <input
                     className="form-control login-input"
-                    placeholder="11 dígitos"
+                    placeholder="Código de área + número"
                     inputMode="numeric"
                     value={reg.telefono}
                     onChange={(e) =>
-                      setReg({ ...reg, telefono: telefono(e.target.value) })
+                      setReg({ ...reg, telefono: telefono(e.target.value, 10) })
                     }
                   />
                 </div>

@@ -149,7 +149,7 @@ export function generarRespuesta(texto, datos, nombreUsuario) {
 
   if (t.includes("registr") || t.includes("cuenta") || t.includes("usuario") || t.includes("login") || t.includes("ingresar")) {
     return {
-      texto: "👤 **Crear una cuenta en Grupo Condado:**\n\nPodés registrarte haciendo clic en \"Crear cuenta\" en la pantalla de login. Solo necesitás:\n\n• Nombre completo\n• Email Gmail (@gmail.com)\n• Teléfono celular (11 dígitos)\n• Contraseña (mín. 6 caracteres)\n\nUna vez registrado, tenés acceso al catálogo, EcoMarket y podés hacer consultas.",
+      texto: "👤 **Crear una cuenta en Grupo Condado:**\n\nPodés registrarte haciendo clic en \"Crear cuenta\" en la pantalla de login. Solo necesitás:\n\n• Nombre completo\n• Email\n• Teléfono celular (código de área + número, 10 dígitos)\n• Contraseña (mín. 6 caracteres)\n\nUna vez registrado, tenés acceso al catálogo, EcoMarket y podés hacer consultas.",
     };
   }
 

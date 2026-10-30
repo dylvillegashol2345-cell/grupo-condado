@@ -52,7 +52,7 @@ function Pagos() {
       esCliente ? clientes.listar() : Promise.resolve([]),
     ]);
     const ordenados = pgs.sort((a, b) =>
-      String(fechaCorta(b.Fecha)).localeCompare(String(fechaCorta(a.Fecha))) || Number(b.IdPago) - Number(a.IdPago));
+      fechaInput(b.Fecha).localeCompare(fechaInput(a.Fecha)) || Number(b.IdPago) - Number(a.IdPago));
     return { pgs: ordenados, cts, ops, clis };
   }, [esCliente]);
 

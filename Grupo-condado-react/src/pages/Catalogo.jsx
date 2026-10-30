@@ -18,6 +18,7 @@ import { useFavoritos } from "../hooks/useFavoritos";
 import { useComparador } from "../hooks/useComparador";
 import { IMG_PROPIEDAD_FALLBACK } from "../utils/catalogos";
 import { MIN_COMPARAR } from "../utils/comparador";
+import { direccion } from "../utils/format";
 
 const estiloBadge = (bg) => ({
   background: bg, color: "white", fontSize: 10, fontWeight: 700,
@@ -35,7 +36,7 @@ function CardFavorita({ p, onQuitar }) {
       </div>
       <div className="prop-card-body">
         <div className="prop-card-precio">{p.price}</div>
-        <h3 className="prop-card-titulo">{p.barrio} · {`${p.calle} ${p.numeracion}`.trim()}</h3>
+        <h3 className="prop-card-titulo">{direccion(p.barrio, p.calle, p.numeracion)}</h3>
         <p className="prop-card-loc"><i className="fa fa-map-marker-alt me-1" />{p.localidad}</p>
         <p style={{ fontSize: 12, color: "var(--text-muted)" }}>
           <i className="fa fa-ruler-combined me-1" />{p.surface || "—"} m²
@@ -72,8 +73,8 @@ function Catalogo() {
   );
 
   const todas = useMemo(() => datos || [], [datos]);
-  const lista = useMemo(() => todas.filter((p) => p.estado === "Disponible"), [todas]);
-  const filtradas = useMemo(() => ordenar(filtrarCatalogo(lista, filtros), orden, dolar), [lista, filtros, orden, dolar]);
+  const lista = useMemo(() => todas.filter((p) => p.estado === "Disponible" && p.publicada), [todas]);
+  const filtradas = useMemo(() => ordenar(filtrarCatalogo(lista, filtros, dolar), orden, dolar), [lista, filtros, orden, dolar]);
   const activos = contarFiltrosActivos(filtros);
 
   const puedeFavoritos = rol === "Cliente";
@@ -243,6 +244,7 @@ function Catalogo() {
           mostrarResumen={resumenVisible}
           onAplicarAlMapa={aplicarAlMapa}
           onLimpiar={limpiar}
+          mostrarEstado={false}
         />
       )}
 

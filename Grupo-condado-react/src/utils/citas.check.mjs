@@ -18,6 +18,8 @@ const props = [
 assert.equal(propiedadDeConsulta("4", props).id, 4);                                   // Id de los datos de ejemplo
 assert.equal(propiedadDeConsulta("Casa en Alberdi · Arturo Orgaz 234", props).id, 5);  // Etiqueta del detalle
 assert.equal(propiedadDeConsulta("casa en  alberdi · arturo orgaz 234 ", props).id, 5);
+assert.equal(propiedadDeConsulta("Casa en Jockey Club", props).id, 4);                 // Sin calle: sin punto suelto
+assert.equal(propiedadDeConsulta("Casa en Jockey Club ·", props).id, 4);               // Formato viejo
 assert.equal(propiedadDeConsulta("Algo que no existe", props), null);
 assert.equal(propiedadDeConsulta("99", props), null);
 
@@ -49,6 +51,9 @@ assert.match(validarCita(base, [otra], hoy), /martin ya tiene una cita el 28\/10
 assert.equal(validarCita(base, [{ ...otra, Estado: "Cancelada" }], hoy), null);           // La cancelada no ocupa
 assert.equal(validarCita(base, [{ ...otra, IdUsuario: 3 }], hoy), null);                  // Otro agente sí puede
 assert.equal(validarCita({ ...base, IdCita: 1 }, [otra], hoy), null);                     // No choca consigo misma
+assert.match(validarCita({ ...base, Hora: "15:45" }, [otra], hoy), /a las 15:00/);       // 45 minutos después: se superpone
+assert.match(validarCita({ ...base, Hora: "14:15" }, [otra], hoy), /a las 15:00/);       // 45 minutos antes: también
+assert.equal(validarCita({ ...base, Hora: "16:00" }, [otra], hoy), null);                // Una hora después: libre
 
 assert.deepEqual(cuerpoCita({ ...base, IdCliente: "", Notas: "  " }), {
   Fecha: "2026-10-28", Hora: "15:00", Estado: "Pendiente", Notas: null, Contacto: "Ana", Telefono: null,

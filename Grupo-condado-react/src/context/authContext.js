@@ -15,7 +15,7 @@ export const PERMISOS = {
     "usuarios", "ambiental", "perfil", "busqueda",
   ],
   Agente: [
-    "inicio", "dashboard", "propiedades", "propietarios", "operaciones",
+    "inicio", "dashboard", "propiedades", "propietarios", "clientes", "operaciones",
     "contratos", "pagos", "consultas", "citas", "ecomarket", "ambiental", "perfil", "busqueda",
   ],
   Cliente: [

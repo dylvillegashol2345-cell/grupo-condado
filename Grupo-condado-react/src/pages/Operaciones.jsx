@@ -4,7 +4,7 @@ import { useCarga } from "../hooks/useCarga";
 import { useUI } from "../context/uiContext";
 import { useActividad } from "../context/actividadContext";
 import { propiedadDisponible, estadoSegunOperacion } from "../utils/reglas";
-import { fechaCorta, fechaInput } from "../utils/format";
+import { direccion, fechaCorta, fechaInput } from "../utils/format";
 import { formatDireccion } from "../utils/contratos";
 import { exportarExcel, COLUMNAS_EXCEL } from "../utils/excel";
 import SearchSelect from "../components/common/SearchSelect";
@@ -129,7 +129,7 @@ function Operaciones() {
       const usu = mapaUsus.get(o.IdUsuario) || {};
       return {
         o,
-        prop: prop.Barrio ? `${prop.Barrio} · ${prop.Calle || ""} ${prop.Numeracion || ""}`.trim() : `Propiedad ${o.IdPropiedad || "—"}`,
+        prop: prop.Barrio ? direccion(prop.Barrio, prop.Calle, prop.Numeracion) : `Propiedad ${o.IdPropiedad || "—"}`,
         cli: cli.Nombre ? `${cli.Apellido || ""} ${cli.Nombre || ""}`.trim() : "—",
         usu: usu.Nombre || "—",
         fecha: fechaCorta(o.Fecha),

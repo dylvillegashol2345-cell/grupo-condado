@@ -3,6 +3,7 @@ import { propiedades, ecoItems } from "../services/entidades";
 import { useCarga } from "../hooks/useCarga";
 import { metricasAmbientales, fraseImpacto } from "../utils/ambiental";
 import { normalizarImagen } from "../utils/imagenes";
+import { direccion } from "../utils/format";
 import Grafico from "../components/dashboard/Grafico";
 
 const OPCIONES_DONA = {
@@ -129,7 +130,7 @@ function Ambiental() {
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={TITULO_FILA}>
-                      {p.Barrio || ""} · {p.Calle || ""} {p.Numeracion || ""}
+                      {direccion(p.Barrio, p.Calle, p.Numeracion)}
                     </div>
                     <div style={{ fontSize: 11, color: "var(--text-muted)" }}>
                       ☀️ Paneles · 🌿 Clase A {p.AislamientoTermico ? "· 🌡️ Aislamiento" : ""}

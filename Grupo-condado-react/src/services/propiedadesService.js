@@ -1,6 +1,6 @@
 import { propiedades } from "./entidades";
 import { tipoLabel, localidadLabel } from "../utils/catalogos";
-import { precio as precioFmt } from "../utils/format";
+import { direccion, precio as precioFmt } from "../utils/format";
 import { normalizarImagen as imagenDe } from "../utils/imagenes";
 import { chipsResumen, parsearCaracteristicas, parsearServicios } from "../utils/caracteristicas";
 
@@ -22,7 +22,7 @@ export function mapPropiedad(p) {
     tipoId:       Number(p.IdTipo),
     localidad:    localidadLabel(p.IdLocalidad),
     localidadId:  Number(p.IdLocalidad),
-    title:        `${p.Barrio || ""} · ${p.Calle || ""} ${p.Numeracion || ""}${piso}${depto}`.trim(),
+    title:        direccion(p.Barrio, p.Calle, p.Numeracion) + piso + depto,
     price:        precioFmt(p.Precio, p.Moneda),
     precioNum:    Number(p.Precio) || 0,
     moneda:       p.Moneda || "ARS",
