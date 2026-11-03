@@ -8,6 +8,7 @@ import {
   reporteOperaciones,
   reporteEcoMarket,
 } from "../../utils/reportes";
+import { abrirVentanaDocumento } from "../../utils/contratoLocacion";
 
 const REPORTES = [
   {
@@ -46,12 +47,18 @@ function ModalReportes({ abierto, onCerrar }) {
   const { toast } = useUI();
 
   async function generar(reporte) {
+    const ventana = abrirVentanaDocumento("Generando reporte...");
+    if (!ventana) {
+      toast("❌ El navegador bloqueó la ventana emergente. Permitila para ver el reporte.", "error");
+      return;
+    }
     try {
       toast("⏳ Generando reporte...", "info", 2000);
       const datos = await reporte.cargar();
       onCerrar();
-      reporte.generar(datos);
+      reporte.generar(datos, ventana);
     } catch (err) {
+      ventana.close();
       console.error("Error generando reporte:", err);
       toast("❌ Error al generar el reporte", "error");
     }

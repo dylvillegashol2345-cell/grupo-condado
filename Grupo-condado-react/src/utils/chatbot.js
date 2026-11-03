@@ -1,5 +1,5 @@
-import { tipoLabel, localidadLabel, LOCALIDADES } from "./catalogos";
-import { numero } from "./format";
+import { tipoLabel, localidadLabel, LOCALIDADES } from "./catalogos.js";
+import { numero } from "./format.js";
 
 export const CHIPS_INICIO = [
   { label: "🏠 Propiedades disponibles", msg: "¿Qué propiedades hay disponibles?" },
@@ -143,6 +143,18 @@ export function generarRespuesta(texto, datos, nombreUsuario) {
         { label: "Ver por tipo", msg: "¿Tienen casas disponibles?" },
         { label: "Ver por localidad", msg: "¿Qué hay en Córdoba Capital?" },
         { label: "Ver catálogo completo", accion: "catalogo" },
+      ],
+    };
+  }
+
+  if (tn.includes("ayuda") || tn.includes("como uso") || tn.includes("como se usa") || tn.includes("usar") ||
+      tn.includes("aplicacion") || tn.includes("plataforma") || tn.includes("que puedo hacer")) {
+    return {
+      texto: "🧭 **Cómo usar Grupo Condado:**\n\n• **Catálogo:** buscá propiedades y filtralas por tipo, localidad o precio, en tarjetas o en el mapa\n• **Ficha de la propiedad:** fotos, recorrido 360°, características y calculadora de honorarios\n• **Favoritos y comparador:** guardá las que te interesan y comparalas lado a lado\n• **Consultas:** pedí información o una visita y un agente te contacta\n• **EcoMarket:** publicá o encontrá objetos para reutilizar\n• **Mi perfil:** tus datos, tus contratos y tus pagos\n\n¿Por dónde querés empezar?",
+      chips: [
+        { label: "Ver catálogo", accion: "catalogo" },
+        { label: "Hacer consulta", accion: "consulta" },
+        { label: "EcoMarket", msg: "¿Cómo funciona el EcoMarket?" },
       ],
     };
   }

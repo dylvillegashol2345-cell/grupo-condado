@@ -82,7 +82,7 @@ function ecoBadge(clase) {
   </span>`;
 }
 
-function abrirImpresion(contenido, nombreArchivo) {
+function abrirImpresion(contenido, nombreArchivo, ventana = window.open("", "_blank", "width=960,height=720")) {
   const fecha = new Date().toLocaleDateString("es-AR").replace(/\//g, "-");
   const nombre = nombreArchivo || `Reporte_GrupoCondado_${fecha}`;
 
@@ -125,7 +125,6 @@ function abrirImpresion(contenido, nombreArchivo) {
 </body>
 </html>`;
 
-  const ventana = window.open("", "_blank", "width=960,height=720");
   if (!ventana) {
     throw new Error("El navegador bloqueó la ventana emergente. Permitila para generar el reporte.");
   }
@@ -133,7 +132,7 @@ function abrirImpresion(contenido, nombreArchivo) {
   ventana.document.close();
 }
 
-export function reportePropiedadesDisponibles(props) {
+export function reportePropiedadesDisponibles(props, ventana) {
   const disponibles = props.filter((p) => p.Estado === "Disponible");
   const total = disponibles.reduce((a, p) => a + Number(p.Precio || 0), 0);
 
@@ -157,11 +156,12 @@ export function reportePropiedadesDisponibles(props) {
         ])
       ) +
       PIE,
-    "Reporte_Propiedades_Disponibles"
+    "Reporte_Propiedades_Disponibles",
+    ventana
   );
 }
 
-export function reporteContratos(contratos) {
+export function reporteContratos(contratos, ventana) {
   abrirImpresion(
     cabecera("Contratos Activos", "Contratos registrados con fechas de vigencia") +
       metricas([[contratos.length, "Contratos en total"]]) +
@@ -183,11 +183,12 @@ export function reporteContratos(contratos) {
         })
       ) +
       PIE,
-    "Reporte_Contratos_Activos"
+    "Reporte_Contratos_Activos",
+    ventana
   );
 }
 
-export function reportePagos(pagos) {
+export function reportePagos(pagos, ventana) {
   const ordenados = [...pagos].sort((a, b) => (Number(b.Monto) || 0) - (Number(a.Monto) || 0));
   const total = ordenados.reduce((a, p) => a + Number(p.Monto || 0), 0);
   const promedio = ordenados.length ? Math.round(total / ordenados.length) : 0;
@@ -208,11 +209,12 @@ export function reportePagos(pagos) {
         ])
       ) +
       PIE,
-    "Reporte_Cobros"
+    "Reporte_Cobros",
+    ventana
   );
 }
 
-export function reporteOperaciones(operaciones) {
+export function reporteOperaciones(operaciones, ventana) {
   const ordenadas = [...operaciones].sort((a, b) => new Date(b.Fecha) - new Date(a.Fecha));
 
   abrirImpresion(
@@ -231,11 +233,12 @@ export function reporteOperaciones(operaciones) {
         ])
       ) +
       PIE,
-    "Reporte_Operaciones"
+    "Reporte_Operaciones",
+    ventana
   );
 }
 
-export function reporteEcoMarket(items) {
+export function reporteEcoMarket(items, ventana) {
   const lista = Array.isArray(items) ? items : [];
   const entregados = lista.filter((i) => i.Estado === "Entregado").length;
 
@@ -262,6 +265,7 @@ export function reporteEcoMarket(items) {
           ♻️ Impacto sustentable: ${entregados} artículo${entregados !== 1 ? "s" : ""} reutilizado${entregados !== 1 ? "s" : ""} gracias a EcoMarket.
         </p>` +
       PIE,
-    "Reporte_EcoMarket"
+    "Reporte_EcoMarket",
+    ventana
   );
 }

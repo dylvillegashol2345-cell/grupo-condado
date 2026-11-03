@@ -18,6 +18,10 @@ import { useFavoritos } from "../hooks/useFavoritos";
 import { useComparador } from "../hooks/useComparador";
 import { IMG_PROPIEDAD_FALLBACK } from "../utils/catalogos";
 import { MIN_COMPARAR } from "../utils/comparador";
+import Paginacion from "../components/common/Paginacion";
+import { paginar } from "../utils/paginacion";
+
+const POR_PAGINA_CATALOGO = 12;
 import { direccion } from "../utils/format";
 
 const estiloBadge = (bg) => ({
@@ -64,6 +68,7 @@ function Catalogo() {
     return () => { vivo = false; };
   }, []);
   const [filtros, setFiltros] = useState(FILTROS_CATALOGO_VACIOS);
+  const [pagina, setPagina] = useState(1);
   const [toastFav, setToastFav] = useState({ texto: "", visible: false });
   const timerFav = useRef(null);
 
@@ -97,6 +102,7 @@ function Catalogo() {
 
   function cambiarFiltros(nuevos) {
     setFiltros(nuevos);
+    setPagina(1);
     setResumenVisible(true);
   }
 
@@ -107,6 +113,7 @@ function Catalogo() {
 
   function limpiar() {
     setFiltros(FILTROS_CATALOGO_VACIOS);
+    setPagina(1);
     setResumenVisible(false);
   }
 
@@ -193,7 +200,7 @@ function Catalogo() {
             className="catalogo-filtro-select"
             style={{ fontSize: 12, padding: ".38rem .75rem" }}
             value={orden}
-            onChange={(e) => setOrden(e.target.value)}
+            onChange={(e) => { setOrden(e.target.value); setPagina(1); }}
           >
             {ORDENES.map((o) => <option key={o.valor} value={o.valor}>{o.label}</option>)}
           </select>
@@ -261,12 +268,18 @@ function Catalogo() {
           <div className="mt-3">
             <PropertyGrid
               id="catalogoLista"
-              propiedades={filtradas}
+              propiedades={paginar(filtradas, pagina, POR_PAGINA_CATALOGO)}
               cargando={cargando}
               esFavorito={puedeFavoritos ? esFavorito : undefined}
               onFavorito={puedeFavoritos ? alternarFavorito : undefined}
               enComparador={enComparador}
               onComparar={alternarCmp}
+            />
+            <Paginacion
+              total={filtradas.length}
+              pagina={pagina}
+              porPagina={POR_PAGINA_CATALOGO}
+              onCambio={(p) => { setPagina(p); window.scrollTo({ top: 0, behavior: "smooth" }); }}
             />
           </div>
         )

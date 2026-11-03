@@ -657,10 +657,10 @@ export function htmlContratoLocacion(d) {
     ${anexoGas()}`;
 }
 
-export function abrirVentanaDocumento() {
+export function abrirVentanaDocumento(texto = "Generando contrato...") {
   const ventana = window.open("", "_blank", "width=980,height=760");
   if (ventana) {
-    ventana.document.write('<p style="font-family:Arial;color:#6c2d20;padding:2rem;">Generando contrato...</p>');
+    ventana.document.write(`<p style="font-family:Arial;color:#6c2d20;padding:2rem;">${texto}</p>`);
   }
   return ventana;
 }

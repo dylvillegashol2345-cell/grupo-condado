@@ -16,9 +16,19 @@ import ComparadorModal from "../components/propiedades/ComparadorModal";
 import { useComparador } from "../hooks/useComparador";
 import { MIN_COMPARAR } from "../utils/comparador";
 import { money, precio } from "../utils/format";
+import { exportarExcel } from "../utils/excel";
 
 const IMG_DEFECTO = "https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=400&q=60";
 const BADGE_ESTADO = { Disponible: "success", Reservada: "warning", Vendida: "secondary", Alquilada: "info" };
+
+const COLUMNAS_EXPORT = [
+  { titulo: "ID", campo: "id" }, { titulo: "Tipo", campo: "type" },
+  { titulo: "Dirección", campo: "title" }, { titulo: "Localidad", campo: "localidad" },
+  { titulo: "Superficie (m²)", campo: "surface" }, { titulo: "Moneda", campo: "moneda" },
+  { titulo: "Precio", campo: "precioNum" }, { titulo: "Estado", campo: "estado" },
+  { titulo: "Clase energética", campo: "categoriaEco" },
+  { titulo: "Publicada", campo: "publicada", formato: (v) => (v ? "Sí" : "No") },
+];
 
 function SkeletonAdmin() {
   return Array.from({ length: 3 }, (_, i) => (
@@ -72,6 +82,15 @@ function Propiedades() {
   }
 
   const valorCartera = filtradas.reduce((a, p) => a + p.precioNum, 0);
+
+  function exportar() {
+    try {
+      exportarExcel(filtradas, COLUMNAS_EXPORT, "Propiedades");
+      toast("✅ Propiedades exportado correctamente", "ok");
+    } catch (err) {
+      toast(err.message, "error");
+    }
+  }
 
   function abrirNueva() {
     setEnEdicion(null);
@@ -214,6 +233,9 @@ function Propiedades() {
                 {activos}
               </span>
             )}
+          </button>
+          <button className="btn btn-light btn-sm" onClick={exportar} title="Exportar Excel">
+            <i className="fa fa-file-excel me-1" style={{ color: "#2e7d32" }} />Excel
           </button>
           <button id="btnAbrirCargaPropiedad" className="btn btn-condado" onClick={abrirNueva}>
             <i className="fa fa-plus me-2" />Cargar propiedad
