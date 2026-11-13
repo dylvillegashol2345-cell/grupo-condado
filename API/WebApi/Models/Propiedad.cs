@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Data;
 using System.Data.SqlClient;
+using System.Configuration;
 
 namespace WebApi.Models
 {
     public class Propiedad
     {
         #region Atributo
-        string connectionString = @"Data Source=Dylan;Initial Catalog=GestionPropiedadesCondado ;Integrated Security=True";
+        string connectionString = ConfigurationManager.ConnectionStrings["GestionPropiedadesCondado"].ConnectionString;
         #endregion
 
         #region Propiedades

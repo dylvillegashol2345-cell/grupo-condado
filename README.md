@@ -64,8 +64,8 @@ Ojo: si ya existe una base con ese nombre, el script la borra y la crea de nuevo
 Abrir `API/GestionPropiedades.sln` en Visual Studio y ejecutar con IIS Express (F5). Queda en
 `http://localhost:56153/`.
 
-- **Cadena de conexión:** está en cada archivo de `API/WebApi/Models/` con `Data Source=Dylan`.
-  Hay que cambiarlo por el nombre de la instancia de SQL Server de cada uno.
+- **Cadena de conexión:** está en `API/WebApi/Web.config`, en `<connectionStrings>`. Hay que cambiar
+  `Data Source=Dylan` por el nombre de la instancia de SQL Server de cada uno.
 - **Clave secreta de reCAPTCHA:** copiar `API/WebApi/secrets.config.example` como
   `secrets.config` y completar la clave. Ese archivo no se sube al repositorio. Si queda vacía,
   el login funciona sin verificar el captcha de Google.

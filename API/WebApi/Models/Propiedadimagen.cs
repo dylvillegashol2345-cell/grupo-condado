@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Data;
 using System.Data.SqlClient;
+using System.Configuration;
 
 namespace WebApi.Models
 {
     public class PropiedadImagen
     {
-        string connectionString = @"Data Source=Dylan;Initial Catalog=GestionPropiedadesCondado ;Integrated Security=True";
+        string connectionString = ConfigurationManager.ConnectionStrings["GestionPropiedadesCondado"].ConnectionString;
 
         public int IdImagen { get; set; }
         public int IdPropiedad { get; set; }
