@@ -741,15 +741,51 @@ td .badge, .estado-badge {
 }
  
 /* ── FOOTER ── */
-footer {
+.pie {
+  margin-top: 2.5rem;
+  padding: 2.25rem 2rem 1.25rem;
+  background: var(--condado-dark);
+  color: rgba(255,255,255,.75);
+  border-radius: var(--radius-lg);
+  font-size: 13.5px;
+}
+.pie-columnas {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 1.3fr;
+  gap: 2rem;
+}
+.pie-marca { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+.pie-marca strong { display: block; color: #fff; font-family: var(--font-display); font-size: 18px; }
+.pie-marca span { font-size: 11px; letter-spacing: .12em; text-transform: uppercase; opacity: .8; }
+.pie-texto { line-height: 1.6; margin-bottom: 14px; max-width: 320px; }
+.pie-redes { display: flex; gap: 10px; }
+.pie-redes a {
+  width: 34px; height: 34px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(255,255,255,.1); color: #fff; text-decoration: none;
+  transition: background .2s;
+}
+.pie-redes a:hover { background: rgba(255,255,255,.25); }
+.pie-titulo {
+  color: #fff; font-size: 12px; font-weight: 700;
+  letter-spacing: .22em; text-transform: uppercase; margin-bottom: 14px;
+}
+.pie-lista { list-style: none; padding: 0; margin: 0; }
+.pie-lista li { margin-bottom: 9px; }
+.pie-lista a { color: rgba(255,255,255,.75); text-decoration: none; }
+.pie-lista a:hover { color: #fff; }
+.pie-contacto li { display: flex; gap: 10px; line-height: 1.5; }
+.pie-contacto i { width: 14px; margin-top: 3px; color: rgba(255,255,255,.55); }
+.pie-base {
   text-align: center;
-  padding: 14px;
-  background: var(--condado);
-  color: rgba(255,255,255,.85);
-  border-top: 3px solid var(--condado-dark);
-  font-size: 12.5px;
-  letter-spacing: .03em;
-  margin-top: 2rem;
+  margin-top: 1.75rem; padding-top: 1rem;
+  border-top: 1px solid rgba(255,255,255,.12);
+  font-size: 12px; color: rgba(255,255,255,.55);
+}
+@media (max-width: 768px) {
+  /* Deja libre el lugar de los botones flotantes del menú y del chat */
+  .pie { padding: 1.75rem 1.25rem 1rem; margin-bottom: 4.5rem; }
+  .pie-columnas { grid-template-columns: 1fr; gap: 1.5rem; }
 }
  
 /* ── SECTION HEADERS (secciones con hr) ── */
