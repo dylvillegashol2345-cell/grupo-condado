@@ -17,8 +17,11 @@ import { useComparador } from "../hooks/useComparador";
 import { MIN_COMPARAR } from "../utils/comparador";
 import { money, precio } from "../utils/format";
 import { exportarExcel } from "../utils/excel";
+import Paginacion from "../components/common/Paginacion";
+import { paginar } from "../utils/paginacion";
 
 const IMG_DEFECTO = "https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=400&q=60";
+const POR_PAGINA_PROPIEDADES = 12;
 const BADGE_ESTADO = { Disponible: "success", Reservada: "warning", Vendida: "secondary", Alquilada: "info" };
 
 const COLUMNAS_EXPORT = [
@@ -54,6 +57,7 @@ function Propiedades() {
   const [filtros, setFiltros] = useState({ ...FILTROS_CATALOGO_VACIOS, texto: searchParams.get("q") || "" });
   const [panelAbierto, setPanelAbierto] = useState(false);
   const [orden, setOrden] = useState("");
+  const [pagina, setPagina] = useState(1);
   const [dolar, setDolar] = useState(null);
   useEffect(() => {
     let vivo = true;
@@ -76,9 +80,11 @@ function Propiedades() {
 
   const filtradas = useMemo(() => ordenar(filtrarCatalogo(lista, filtros, dolar), orden, dolar), [lista, filtros, orden, dolar]);
   const activos = contarFiltrosActivos(filtros);
+  const paginaActual = Math.min(pagina, Math.max(1, Math.ceil(filtradas.length / POR_PAGINA_PROPIEDADES)));
 
   function limpiarFiltros() {
     setFiltros(FILTROS_CATALOGO_VACIOS);
+    setPagina(1);
   }
 
   const valorCartera = filtradas.reduce((a, p) => a + p.precioNum, 0);
@@ -135,7 +141,7 @@ function Propiedades() {
   } else {
     contenido = (
       <div className="row g-3">
-        {filtradas.map((p) => (
+        {paginar(filtradas, paginaActual, POR_PAGINA_PROPIEDADES).map((p) => (
           <div className="col-md-4" key={p.id}>
             <div className="card h-100 shadow-sm" style={{ borderRadius: 12, overflow: "hidden", border: "1px solid var(--border)" }}>
               <img src={p.image || IMG_DEFECTO} alt="" style={{ height: 195, objectFit: "cover", width: "100%" }} />
@@ -205,7 +211,7 @@ function Propiedades() {
             className="catalogo-filtro-select"
             style={{ fontSize: 12, padding: ".38rem .75rem" }}
             value={orden}
-            onChange={(e) => setOrden(e.target.value)}
+            onChange={(e) => { setOrden(e.target.value); setPagina(1); }}
           >
             {ORDENES.map((o) => <option key={o.valor} value={o.valor}>{o.label}</option>)}
           </select>
@@ -248,7 +254,7 @@ function Propiedades() {
       {panelAbierto && (
         <CatalogoFiltros
           filtros={filtros}
-          onChange={setFiltros}
+          onChange={(f) => { setFiltros(f); setPagina(1); }}
           cantidad={filtradas.length}
           mostrarResumen
           onLimpiar={limpiarFiltros}
@@ -258,6 +264,14 @@ function Propiedades() {
       {vista === "mapa"
         ? <MapaCatalogo propiedades={filtradas} />
         : <div id="adminPropLista" className="row g-3">{contenido}</div>}
+      {vista === "cards" && !cargando && (
+        <Paginacion
+          total={filtradas.length}
+          pagina={paginaActual}
+          porPagina={POR_PAGINA_PROPIEDADES}
+          onCambio={(p) => { setPagina(p); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+        />
+      )}
       <div id="propiedadesMsg" className="mt-2" />
 
       <BarraComparador
