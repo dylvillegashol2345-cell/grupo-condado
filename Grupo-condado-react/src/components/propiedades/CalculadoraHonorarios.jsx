@@ -2,8 +2,8 @@ import { calcularHonorarios } from "../../utils/honorarios";
 import { importe } from "../../utils/cotizacion";
 import { entero, monto } from "../../utils/restricciones";
 
-function CalculadoraHonorarios({ precio, moneda, valores, onCambiar, dolar }) {
-  const h = calcularHonorarios(precio, valores);
+function CalculadoraHonorarios({ precio, moneda, valores, onCambiar, dolar, porcentajes }) {
+  const h = calcularHonorarios(precio, valores, porcentajes);
   const set = (campo, v) => onCambiar({ ...valores, [campo]: v });
   const alquiler = valores.operacion === "Alquiler";
   const monedaBase = alquiler ? "ARS" : moneda;

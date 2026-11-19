@@ -13,6 +13,12 @@ export const consultas    = recurso("Consulta");
 export const citas        = recurso("Cita");
 export const ecoItems     = recurso("EcoMarketItem");
 
+// Porcentajes de comisión: los lee cualquiera con sesión; los cambia solo el Administrador
+export const parametros = {
+  listar: async () => comoLista(await api.get("/Parametro")),
+  guardar: (lista) => api.put("/Parametro", lista),
+};
+
 export async function login(nombre, contrasena, captchaToken) {
   const data = await api.post("/Login", {
     Nombre: nombre,

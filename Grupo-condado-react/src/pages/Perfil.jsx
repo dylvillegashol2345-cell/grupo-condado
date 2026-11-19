@@ -8,6 +8,7 @@ import { ROL_A_ID } from "../utils/catalogos";
 import PasswordInput from "../components/common/PasswordInput";
 import PasswordStrength from "../components/common/PasswordStrength";
 import ResumenCliente from "../components/perfil/ResumenCliente";
+import ParametrosComision from "../components/perfil/ParametrosComision";
 
 const TITULO_ROL = {
   Administrador: "Administrador",
@@ -146,6 +147,12 @@ function Perfil() {
           </div>
         </div>
       </div>
+
+      {rol === "Administrador" && (
+        <div className="mt-3">
+          <ParametrosComision estiloTitulo={TITULO_CARD} />
+        </div>
+      )}
 
       <div id="perfilClienteResumen" className="mt-3">
         {rol === "Cliente" && <ResumenCliente usuario={usuario} />}

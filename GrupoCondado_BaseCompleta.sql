@@ -2099,49 +2099,6 @@ END;
 GO
 
 -- 2. SP_Contrato_Insert --------------------------------------------------
-CREATE PROCEDURE SP_Contrato_Insert
-    @FechaInicio DATE,@FechaFin DATE,@IdOperacion INT,
-    @LocadorNombre NVARCHAR(100)=NULL,@LocadorDni NVARCHAR(20)=NULL,
-    @LocadorDomicilio NVARCHAR(200)=NULL,@LocatarioNombre NVARCHAR(100)=NULL,
-    @LocatarioDni NVARCHAR(20)=NULL,@LocatarioDomicilio NVARCHAR(200)=NULL,
-    @InmuebleDireccion NVARCHAR(200)=NULL,@InmuebleLocalidad NVARCHAR(100)=NULL,
-    @Destino NVARCHAR(50)='Vivienda familiar',@Moneda NVARCHAR(10)='ARS',
-    @CanonMensual DECIMAL(18,2)=NULL,@Deposito DECIMAL(18,2)=NULL,
-    @IndiceActualizacion NVARCHAR(50)='ICL',@Banco NVARCHAR(100)=NULL,
-    @Cbu NVARCHAR(50)=NULL,@Cuit NVARCHAR(20)=NULL,
-    @ExpOrd NVARCHAR(20)='Locatario',@ExpExt NVARCHAR(20)='Locador',
-    @Municipalidad NVARCHAR(20)='Locatario',@Servicios NVARCHAR(20)='Locatario',
-    @ComisionPct DECIMAL(5,2)=0,@ComisionCargo NVARCHAR(20)='Locatario',
-    @Documentacion NVARCHAR(300)=NULL,@Deuda NVARCHAR(10)='No',
-    @DeudaDetalle NVARCHAR(300)=NULL,@Observaciones NVARCHAR(1000)=NULL,
-    -- Compraventa (todos opcionales: un contrato de locación no los manda)
-    @TipoContrato NVARCHAR(20)='Alquiler',@VendedorCuit NVARCHAR(20)=NULL,
-    @VendedorEstadoCivil NVARCHAR(30)=NULL,@CompradorEstadoCivil NVARCHAR(30)=NULL,
-    @Matricula NVARCHAR(50)=NULL,@SuperficieM2 DECIMAL(10,2)=NULL,
-    @PrecioTotal DECIMAL(18,2)=NULL,@Sena DECIMAL(18,2)=NULL,
-    @TipoSena NVARCHAR(30)=NULL,@FechaPosesion DATE=NULL,
-    @EstadoInmueble NVARCHAR(50)=NULL,@GastosEscritura NVARCHAR(50)=NULL,
-    @Impuestos NVARCHAR(50)=NULL,@Penalidades NVARCHAR(500)=NULL
-AS BEGIN
-    INSERT INTO Contrato(FechaInicio,FechaFin,IdOperacion,LocadorNombre,LocadorDni,
-        LocadorDomicilio,LocatarioNombre,LocatarioDni,LocatarioDomicilio,
-        InmuebleDireccion,InmuebleLocalidad,Destino,Moneda,CanonMensual,Deposito,
-        IndiceActualizacion,Banco,Cbu,Cuit,ExpOrd,ExpExt,Municipalidad,Servicios,
-        ComisionPct,ComisionCargo,Documentacion,Deuda,DeudaDetalle,Observaciones,
-        TipoContrato,VendedorCuit,VendedorEstadoCivil,CompradorEstadoCivil,
-        Matricula,SuperficieM2,PrecioTotal,Sena,TipoSena,
-        FechaPosesion,EstadoInmueble,GastosEscritura,Impuestos,Penalidades)
-    VALUES(@FechaInicio,@FechaFin,@IdOperacion,@LocadorNombre,@LocadorDni,
-        @LocadorDomicilio,@LocatarioNombre,@LocatarioDni,@LocatarioDomicilio,
-        @InmuebleDireccion,@InmuebleLocalidad,@Destino,@Moneda,@CanonMensual,@Deposito,
-        @IndiceActualizacion,@Banco,@Cbu,@Cuit,@ExpOrd,@ExpExt,@Municipalidad,@Servicios,
-        @ComisionPct,@ComisionCargo,@Documentacion,@Deuda,@DeudaDetalle,@Observaciones,
-        ISNULL(@TipoContrato,'Alquiler'),@VendedorCuit,@VendedorEstadoCivil,@CompradorEstadoCivil,
-        @Matricula,@SuperficieM2,@PrecioTotal,@Sena,@TipoSena,
-        @FechaPosesion,@EstadoInmueble,@GastosEscritura,@Impuestos,@Penalidades);
-    SELECT SCOPE_IDENTITY() AS IdContrato;
-END;
-GO
 
 -- 3. SP_Contrato_Update --------------------------------------------------
 CREATE PROCEDURE SP_Contrato_Update
@@ -2756,29 +2713,8 @@ GO
 /* ----------------------------------------------------------
    CORRECCIONES v1.0 - Tarea 4: operación y cambio de estado en una sola transacción
    ---------------------------------------------------------- */
-CREATE OR ALTER PROCEDURE SP_Operacion_Insert @Tipo NVARCHAR(100),@Fecha DATE,@IdCliente INT,@IdPropiedad INT,@IdUsuario INT AS
-BEGIN
-    SET NOCOUNT ON; SET XACT_ABORT ON;
-    IF @Tipo NOT IN ('Venta', 'Alquiler')
-        THROW 50004, 'El tipo de operación tiene que ser Venta o Alquiler.', 1;
-    BEGIN TRAN;
-        -- RN4 y RN5. El UPDATE condicional bloquea la fila: si dos agentes registran a la vez,
-        -- el segundo espera, encuentra la propiedad ya vendida o alquilada y no actualiza nada.
-        UPDATE Propiedad
-           SET Estado = CASE @Tipo WHEN 'Venta' THEN 'Vendida' ELSE 'Alquilada' END
-         WHERE IdPropiedad = @IdPropiedad AND Estado = 'Disponible';
-        IF @@ROWCOUNT = 0
-        BEGIN
-            ROLLBACK;
-            THROW 50001, 'La propiedad ya no está disponible.', 1;
-        END
-        INSERT INTO Operacion (Tipo, Fecha, IdCliente, IdPropiedad, IdUsuario)
-        VALUES (@Tipo, @Fecha, @IdCliente, @IdPropiedad, @IdUsuario);
-        DECLARE @IdOperacion INT = SCOPE_IDENTITY();
-    COMMIT;
-    SELECT @IdOperacion AS IdOperacion;
-END;
-GO
+-- La versión final de SP_Operacion_Insert, que además registra la comisión de venta,
+-- está en el bloque de la Tarea 6 (necesita las columnas nuevas de Comision).
 
 /* ----------------------------------------------------------
    CORRECCIONES v1.0 - Tarea 3: RN3, no se publica sin matrícula y título
@@ -2972,6 +2908,174 @@ AS BEGIN
          Contacto = @Contacto, Telefono = @Telefono, IdCliente = @IdCliente, IdUsuario = @IdUsuario,
          IdPropiedad = @IdPropiedad, IdConsulta = @IdConsulta
   WHERE IdCita = @IdCita;
+END;
+GO
+
+/* ----------------------------------------------------------
+   CORRECCIONES v1.0 - Tarea 6: comisiones parametrizadas
+   Los porcentajes son una política de los socios: se guardan como parámetros,
+   solo los cambia el Administrador y cada comisión registra el porcentaje usado.
+   ---------------------------------------------------------- */
+IF OBJECT_ID(N'dbo.Parametro', N'U') IS NULL
+CREATE TABLE [Parametro] (
+    [Clave] NVARCHAR(50) NOT NULL,
+    [Valor] DECIMAL(9,4) NOT NULL,
+    [ModificadoPor] INT NULL,
+    [FechaModificacion] DATETIME2 NOT NULL CONSTRAINT [DF_Parametro_Fecha] DEFAULT (SYSDATETIME()),
+    CONSTRAINT [PK_Parametro] PRIMARY KEY ([Clave]),
+    CONSTRAINT [FK_Parametro_Usuario] FOREIGN KEY ([ModificadoPor]) REFERENCES [Usuario] ([IdUsuario]) ON DELETE SET NULL
+);
+IF OBJECT_ID(N'dbo.ParametroHistorial', N'U') IS NULL
+CREATE TABLE [ParametroHistorial] (
+    [IdHistorial] INT IDENTITY(1,1) NOT NULL,
+    [Clave] NVARCHAR(50) NOT NULL,
+    [ValorAnterior] DECIMAL(9,4) NOT NULL,
+    [ValorNuevo] DECIMAL(9,4) NOT NULL,
+    [IdUsuario] INT NOT NULL,
+    [Fecha] DATETIME2 NOT NULL CONSTRAINT [DF_ParametroHistorial_Fecha] DEFAULT (SYSDATETIME()),
+    CONSTRAINT [PK_ParametroHistorial] PRIMARY KEY ([IdHistorial])
+);
+GO
+
+-- Valores de la carpeta: venta 3% a cargo del comprador y 2% del vendedor; alquiler 3% del total del contrato
+INSERT INTO Parametro (Clave, Valor)
+SELECT v.Clave, v.Valor
+FROM (VALUES (N'COMISION_VENTA_COMPRADOR', 0.03), (N'COMISION_VENTA_VENDEDOR', 0.02), (N'COMISION_ALQUILER', 0.03)) v (Clave, Valor)
+WHERE NOT EXISTS (SELECT 1 FROM Parametro p WHERE p.Clave = v.Clave);
+
+IF COL_LENGTH('Comision', 'Porcentaje') IS NULL ALTER TABLE Comision ADD Porcentaje DECIMAL(9,4) NULL;
+IF COL_LENGTH('Comision', 'Concepto') IS NULL ALTER TABLE Comision ADD Concepto NVARCHAR(30) NULL;
+-- La comisión va en la moneda de la operación, para no sumar pesos con dólares
+IF COL_LENGTH('Comision', 'Moneda') IS NULL ALTER TABLE Comision ADD Moneda NVARCHAR(10) NULL;
+GO
+
+CREATE OR ALTER PROCEDURE SP_Parametro_GetAll AS
+BEGIN
+    SET NOCOUNT ON;
+    SELECT Clave, Valor, ModificadoPor, FechaModificacion FROM Parametro ORDER BY Clave;
+END;
+GO
+
+-- Cambia un parámetro y deja el registro en el historial, en la misma transacción
+CREATE OR ALTER PROCEDURE SP_Parametro_Update @Clave NVARCHAR(50), @Valor DECIMAL(9,4), @IdUsuario INT AS
+BEGIN
+    SET NOCOUNT ON; SET XACT_ABORT ON;
+    IF @Valor < 0 OR @Valor >= 1
+        THROW 50007, 'El porcentaje tiene que estar entre 0% y 100%.', 1;
+    BEGIN TRAN;
+        DECLARE @Anterior DECIMAL(9,4) = (SELECT Valor FROM Parametro WITH (UPDLOCK) WHERE Clave = @Clave);
+        IF @Anterior IS NULL
+        BEGIN
+            ROLLBACK;
+            THROW 50008, 'No existe ese parámetro.', 1;
+        END
+        IF @Anterior <> @Valor
+        BEGIN
+            INSERT INTO ParametroHistorial (Clave, ValorAnterior, ValorNuevo, IdUsuario) VALUES (@Clave, @Anterior, @Valor, @IdUsuario);
+            UPDATE Parametro SET Valor = @Valor, ModificadoPor = @IdUsuario, FechaModificacion = SYSDATETIME() WHERE Clave = @Clave;
+        END
+    COMMIT;
+END;
+GO
+
+-- Tarea 4 + tarea 6: estado, operación y comisión de venta en una sola transacción
+CREATE OR ALTER PROCEDURE SP_Operacion_Insert @Tipo NVARCHAR(100),@Fecha DATE,@IdCliente INT,@IdPropiedad INT,@IdUsuario INT AS
+BEGIN
+    SET NOCOUNT ON; SET XACT_ABORT ON;
+    IF @Tipo NOT IN ('Venta', 'Alquiler')
+        THROW 50004, 'El tipo de operación tiene que ser Venta o Alquiler.', 1;
+    BEGIN TRAN;
+        -- RN4 y RN5. El UPDATE condicional bloquea la fila: si dos agentes registran a la vez,
+        -- el segundo espera, encuentra la propiedad ya vendida o alquilada y no actualiza nada.
+        UPDATE Propiedad
+           SET Estado = CASE @Tipo WHEN 'Venta' THEN 'Vendida' ELSE 'Alquilada' END
+         WHERE IdPropiedad = @IdPropiedad AND Estado = 'Disponible';
+        IF @@ROWCOUNT = 0
+        BEGIN
+            ROLLBACK;
+            THROW 50001, 'La propiedad ya no está disponible.', 1;
+        END
+        INSERT INTO Operacion (Tipo, Fecha, IdCliente, IdPropiedad, IdUsuario)
+        VALUES (@Tipo, @Fecha, @IdCliente, @IdPropiedad, @IdUsuario);
+        DECLARE @IdOperacion INT = SCOPE_IDENTITY();
+
+        -- La comisión de venta sale del precio de la propiedad. La del alquiler se calcula
+        -- al cargar el contrato (SP_Contrato_Insert), porque recién ahí se conoce el total.
+        IF @Tipo = 'Venta'
+        BEGIN
+            DECLARE @Precio DECIMAL(18,2), @Moneda NVARCHAR(10);
+            SELECT @Precio = Precio, @Moneda = ISNULL(Moneda, 'ARS') FROM Propiedad WHERE IdPropiedad = @IdPropiedad;
+            INSERT INTO Comision (Monto, IdOperacion, Porcentaje, Concepto, Moneda)
+            SELECT ROUND(@Precio * p.Valor, 2), @IdOperacion, p.Valor,
+                   CASE p.Clave WHEN 'COMISION_VENTA_COMPRADOR' THEN 'Venta - comprador' ELSE 'Venta - vendedor' END, @Moneda
+            FROM Parametro p WHERE p.Clave IN ('COMISION_VENTA_COMPRADOR', 'COMISION_VENTA_VENDEDOR');
+            IF @@ROWCOUNT <> 2
+                THROW 50009, 'Faltan los porcentajes de comisión de venta.', 1;
+        END
+    COMMIT;
+    SELECT @IdOperacion AS IdOperacion;
+END;
+GO
+
+-- Alquiler: la comisión es un porcentaje del valor total del contrato (canon mensual x meses)
+CREATE OR ALTER PROCEDURE SP_Contrato_Insert
+    @FechaInicio DATE,@FechaFin DATE,@IdOperacion INT,
+    @LocadorNombre NVARCHAR(100)=NULL,@LocadorDni NVARCHAR(20)=NULL,
+    @LocadorDomicilio NVARCHAR(200)=NULL,@LocatarioNombre NVARCHAR(100)=NULL,
+    @LocatarioDni NVARCHAR(20)=NULL,@LocatarioDomicilio NVARCHAR(200)=NULL,
+    @InmuebleDireccion NVARCHAR(200)=NULL,@InmuebleLocalidad NVARCHAR(100)=NULL,
+    @Destino NVARCHAR(50)='Vivienda familiar',@Moneda NVARCHAR(10)='ARS',
+    @CanonMensual DECIMAL(18,2)=NULL,@Deposito DECIMAL(18,2)=NULL,
+    @IndiceActualizacion NVARCHAR(50)='ICL',@Banco NVARCHAR(100)=NULL,
+    @Cbu NVARCHAR(50)=NULL,@Cuit NVARCHAR(20)=NULL,
+    @ExpOrd NVARCHAR(20)='Locatario',@ExpExt NVARCHAR(20)='Locador',
+    @Municipalidad NVARCHAR(20)='Locatario',@Servicios NVARCHAR(20)='Locatario',
+    @ComisionPct DECIMAL(5,2)=0,@ComisionCargo NVARCHAR(20)='Locatario',
+    @Documentacion NVARCHAR(300)=NULL,@Deuda NVARCHAR(10)='No',
+    @DeudaDetalle NVARCHAR(300)=NULL,@Observaciones NVARCHAR(1000)=NULL,
+    -- Compraventa (todos opcionales: un contrato de locación no los manda)
+    @TipoContrato NVARCHAR(20)='Alquiler',@VendedorCuit NVARCHAR(20)=NULL,
+    @VendedorEstadoCivil NVARCHAR(30)=NULL,@CompradorEstadoCivil NVARCHAR(30)=NULL,
+    @Matricula NVARCHAR(50)=NULL,@SuperficieM2 DECIMAL(10,2)=NULL,
+    @PrecioTotal DECIMAL(18,2)=NULL,@Sena DECIMAL(18,2)=NULL,
+    @TipoSena NVARCHAR(30)=NULL,@FechaPosesion DATE=NULL,
+    @EstadoInmueble NVARCHAR(50)=NULL,@GastosEscritura NVARCHAR(50)=NULL,
+    @Impuestos NVARCHAR(50)=NULL,@Penalidades NVARCHAR(500)=NULL
+AS BEGIN
+    SET NOCOUNT ON; SET XACT_ABORT ON;
+    BEGIN TRAN;
+    INSERT INTO Contrato(FechaInicio,FechaFin,IdOperacion,LocadorNombre,LocadorDni,
+        LocadorDomicilio,LocatarioNombre,LocatarioDni,LocatarioDomicilio,
+        InmuebleDireccion,InmuebleLocalidad,Destino,Moneda,CanonMensual,Deposito,
+        IndiceActualizacion,Banco,Cbu,Cuit,ExpOrd,ExpExt,Municipalidad,Servicios,
+        ComisionPct,ComisionCargo,Documentacion,Deuda,DeudaDetalle,Observaciones,
+        TipoContrato,VendedorCuit,VendedorEstadoCivil,CompradorEstadoCivil,
+        Matricula,SuperficieM2,PrecioTotal,Sena,TipoSena,
+        FechaPosesion,EstadoInmueble,GastosEscritura,Impuestos,Penalidades)
+    VALUES(@FechaInicio,@FechaFin,@IdOperacion,@LocadorNombre,@LocadorDni,
+        @LocadorDomicilio,@LocatarioNombre,@LocatarioDni,@LocatarioDomicilio,
+        @InmuebleDireccion,@InmuebleLocalidad,@Destino,@Moneda,@CanonMensual,@Deposito,
+        @IndiceActualizacion,@Banco,@Cbu,@Cuit,@ExpOrd,@ExpExt,@Municipalidad,@Servicios,
+        @ComisionPct,@ComisionCargo,@Documentacion,@Deuda,@DeudaDetalle,@Observaciones,
+        ISNULL(@TipoContrato,'Alquiler'),@VendedorCuit,@VendedorEstadoCivil,@CompradorEstadoCivil,
+        @Matricula,@SuperficieM2,@PrecioTotal,@Sena,@TipoSena,
+        @FechaPosesion,@EstadoInmueble,@GastosEscritura,@Impuestos,@Penalidades);
+    DECLARE @IdContrato INT = SCOPE_IDENTITY();
+
+    -- Meses completos entre inicio y fin (16/09 al 16/09 del año siguiente = 12)
+    DECLARE @Meses INT = DATEDIFF(MONTH, @FechaInicio, @FechaFin) - CASE WHEN DAY(@FechaFin) < DAY(@FechaInicio) THEN 1 ELSE 0 END;
+    IF EXISTS (SELECT 1 FROM Operacion WHERE IdOperacion = @IdOperacion AND Tipo = 'Alquiler')
+       AND ISNULL(@CanonMensual, 0) > 0 AND @Meses > 0
+       AND NOT EXISTS (SELECT 1 FROM Comision WHERE IdOperacion = @IdOperacion AND Concepto = 'Alquiler')
+    BEGIN
+        INSERT INTO Comision (Monto, IdOperacion, Porcentaje, Concepto, Moneda)
+        SELECT ROUND(@CanonMensual * @Meses * Valor, 2), @IdOperacion, Valor, 'Alquiler', ISNULL(@Moneda, 'ARS')
+        FROM Parametro WHERE Clave = 'COMISION_ALQUILER';
+        IF @@ROWCOUNT = 0
+            THROW 50009, 'Falta el porcentaje de comisión de alquiler.', 1;
+    END
+    COMMIT;
+    SELECT @IdContrato AS IdContrato;
 END;
 GO
 

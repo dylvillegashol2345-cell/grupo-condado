@@ -45,7 +45,7 @@ Esperar "La propiedad quedó Alquilada" ((Sql "SELECT Estado FROM Propiedad WHER
 Esperar "Volver a operarla da 'ya no está disponible'" ("$(Sql "EXEC SP_Operacion_Insert 'Venta', '$hoy', 1, $p2, 2")" -match "ya no est")
 
 # Limpieza
-Sql "DELETE FROM Operacion WHERE IdPropiedad IN ($p1, $p2); DELETE FROM Propiedad WHERE IdPropiedad IN ($p1, $p2);" | Out-Null
+Sql "DELETE FROM Comision WHERE IdOperacion IN (SELECT IdOperacion FROM Operacion WHERE IdPropiedad IN ($p1, $p2)); DELETE FROM Operacion WHERE IdPropiedad IN ($p1, $p2); DELETE FROM Propiedad WHERE IdPropiedad IN ($p1, $p2);" | Out-Null
 Esperar "Limpieza: no quedan propiedades de prueba" ((Sql "SELECT COUNT(*) FROM Propiedad WHERE Barrio = N'PRUEBA TRANSACCION'") -eq "0")
 
 ""

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { propiedades, propietarios, imagenesDePropiedad } from "../services/entidades";
+import { propiedades, propietarios, imagenesDePropiedad, parametros } from "../services/entidades";
 import { mapPropiedad } from "../services/propiedadesService";
 import { useCarga } from "../hooks/useCarga";
 import { useAuth } from "../context/authContext";
@@ -17,7 +17,7 @@ import ErrorBanner from "../components/common/ErrorBanner";
 import { Spinner } from "../components/common/Loader";
 import CalculadoraHonorarios from "../components/propiedades/CalculadoraHonorarios";
 import { useUI } from "../context/uiContext";
-import { HONORARIOS_DEFECTO, calcularHonorarios } from "../utils/honorarios";
+import { HONORARIOS_DEFECTO, COMISION_PCT, calcularHonorarios, porcentajesDe } from "../utils/honorarios";
 import { abrirFichaPropiedad } from "../utils/fichaPropiedad";
 import { obtenerCotizacion } from "../utils/cotizacion";
 import { mensajeWhatsApp, linkWhatsApp } from "../utils/compartir";
@@ -63,7 +63,14 @@ function PropertyDetail() {
   const [vistaMedia, setVistaMedia] = useState("fotos");
   const { toast } = useUI();
   const [honorarios, setHonorarios] = useState(HONORARIOS_DEFECTO);
+  const [porcentajes, setPorcentajes] = useState(COMISION_PCT);
   const [dolar, setDolar] = useState(null);
+  useEffect(() => {
+    if (invitado) return undefined;
+    let vivo = true;
+    parametros.listar().then((l) => { if (vivo) setPorcentajes(porcentajesDe(l)); }).catch(() => {});
+    return () => { vivo = false; };
+  }, [invitado]);
   useEffect(() => {
     let vivo = true;
     obtenerCotizacion().then((c) => { if (vivo && c) setDolar(c.valor); });
@@ -118,7 +125,7 @@ function PropertyDetail() {
     try {
       abrirFichaPropiedad({
         p, fotos, caracteristicas, servicios,
-        honorarios: invitado ? null : { ...honorarios, ...calcularHonorarios(p.precioNum, honorarios) },
+        honorarios: invitado ? null : { ...honorarios, ...calcularHonorarios(p.precioNum, honorarios, porcentajes) },
       });
     } catch (err) {
       toast(err.message, "error");
@@ -342,7 +349,7 @@ function PropertyDetail() {
             <p style={{ fontSize: 13, color: "var(--text-muted)", marginBottom: "1rem" }}>
               Calculá la comisión de Grupo Condado por la venta o el alquiler, en 1 a 3 cuotas. Lo que cargues acá también sale en la ficha PDF.
             </p>
-            <CalculadoraHonorarios precio={p.precioNum} moneda={p.moneda} valores={honorarios} onCambiar={setHonorarios} dolar={dolar} />
+            <CalculadoraHonorarios precio={p.precioNum} moneda={p.moneda} valores={honorarios} onCambiar={setHonorarios} dolar={dolar} porcentajes={porcentajes} />
           </div>
         )}
 

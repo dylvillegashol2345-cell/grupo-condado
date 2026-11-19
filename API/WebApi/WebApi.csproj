@@ -184,6 +184,7 @@
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\LoginController.cs" />
     <Compile Include="Controllers\OperacionController.cs" />
+    <Compile Include="Controllers\ParametroController.cs" />
     <Compile Include="Controllers\PagoController.cs" />
     <Compile Include="Controllers\PropiedadController.cs" />
     <Compile Include="Controllers\PropiedadimagenController.cs" />
@@ -203,6 +204,7 @@
     <Compile Include="Models\Ecomarketitem.cs" />
     <Compile Include="Models\Ecomarketmensaje.cs" />
     <Compile Include="Models\Operacion.cs" />
+    <Compile Include="Models\Parametro.cs" />
     <Compile Include="Models\Pago.cs" />
     <Compile Include="Models\Propiedad.cs" />
     <Compile Include="Models\Propietario.cs" />
