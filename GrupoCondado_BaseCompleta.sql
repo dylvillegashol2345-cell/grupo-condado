@@ -2,25 +2,23 @@
    GRUPO CONDADO - BASE DE DATOS COMPLETA
    Base: GestionPropiedadesCondado (SQL Server)
 
-   Este script reemplaza al script base y a todos los parches:
-   crea la base con sus 21 tablas, carga todos los datos,
-   las claves forÃ¡neas y los procedimientos almacenados.
+   Instalación desde cero: crea la base con sus tablas, carga los datos,
+   las claves foráneas, las restricciones y los procedimientos almacenados.
 
-   OJO: si ya existe una base con este nombre, LA BORRA y la crea
-   de nuevo. Si tenÃ©s datos que te importan, hacÃ© antes una copia
-   de seguridad (clic derecho en la base > Tareas > Copia de seguridad).
+   Si la base ya existe, el script se detiene sin tocar nada. Para una base
+   que ya existe se usa el parche de actualización, Parche_v1.0_correcciones.sql.
 
-   CÃ³mo usarlo: abrirlo en SQL Server Management Studio y apretar
-   Ejecutar (F5). Al final muestra cuÃ¡ntas filas quedaron en cada tabla.
+   Cómo usarlo: abrirlo en SQL Server Management Studio y apretar
+   Ejecutar (F5). Al final muestra cuántas filas quedaron en cada tabla.
    Generado el 26/10/2026 desde la base de trabajo del equipo.
    ============================================================ */
 
 USE master;
 GO
-IF DB_ID(N'GestionPropiedadesCondado') IS NOT NULL
+IF DB_ID('GestionPropiedadesCondado') IS NOT NULL
 BEGIN
-    ALTER DATABASE [GestionPropiedadesCondado] SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
-    DROP DATABASE [GestionPropiedadesCondado];
+    RAISERROR('La base ya existe. Use el procedimiento de actualización.', 16, 1);
+    SET NOEXEC ON;  -- no ejecuta el resto del script
 END
 GO
 CREATE DATABASE [GestionPropiedadesCondado] COLLATE Modern_Spanish_CI_AS;
@@ -1971,7 +1969,7 @@ SET IDENTITY_INSERT [Pago] OFF;
 GO
 
 /* ----------------------------------------------------------
-   3. CLAVES FORÃNEAS
+   3. CLAVES FORÁNEAS
    ---------------------------------------------------------- */
 
 ALTER TABLE [Cita] WITH CHECK ADD CONSTRAINT [FK_Cita_Propiedad] FOREIGN KEY ([IdPropiedad]) REFERENCES [Propiedad] ([IdPropiedad]);
@@ -2871,4 +2869,7 @@ UNION ALL SELECT N'ContratoDocumento' AS Tabla, COUNT(*) AS Filas FROM [Contrato
 UNION ALL SELECT N'EcoMarketMensaje' AS Tabla, COUNT(*) AS Filas FROM [EcoMarketMensaje]
 UNION ALL SELECT N'Pago' AS Tabla, COUNT(*) AS Filas FROM [Pago]
 ORDER BY Tabla;
+GO
+
+SET NOEXEC OFF;
 GO
