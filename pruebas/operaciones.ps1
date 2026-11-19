@@ -4,7 +4,7 @@
 param([string]$Servidor = "Dylan")
 
 $fallas = 0
-function Sql($consulta) { sqlcmd -S $Servidor -E -d GestionPropiedadesCondado -h -1 -W -b -Q "SET NOCOUNT ON; $consulta" 2>&1 }
+function Sql($consulta) { sqlcmd -S $Servidor -E -I -d GestionPropiedadesCondado -h -1 -W -b -Q "SET NOCOUNT ON; $consulta" 2>&1 }
 function Esperar($nombre, $ok) {
     if (-not $ok) { $script:fallas++ }
     "{0,-5} {1}" -f ($(if ($ok) { "OK" } else { "FALLA" })), $nombre
@@ -30,9 +30,9 @@ Esperar "La propiedad sigue Disponible (se deshizo el cambio de estado)" ((Sql "
 Esperar "No quedó ninguna operación" ((Sql "SELECT COUNT(*) FROM Operacion WHERE IdPropiedad = $p1") -eq "0")
 
 "--- CP-30: dos agentes registran la misma propiedad a la vez"
-$a = Start-Job -ScriptBlock { param($s, $p, $f) sqlcmd -S $s -E -d GestionPropiedadesCondado -h -1 -W -Q "SET NOCOUNT ON; BEGIN TRAN; EXEC SP_Operacion_Insert 'Venta', '$f', 1, $p, 2; WAITFOR DELAY '00:00:04'; COMMIT;" 2>&1 } -ArgumentList $Servidor, $p1, $hoy
+$a = Start-Job -ScriptBlock { param($s, $p, $f) sqlcmd -S $s -E -I -d GestionPropiedadesCondado -h -1 -W -Q "SET NOCOUNT ON; BEGIN TRAN; EXEC SP_Operacion_Insert 'Venta', '$f', 1, $p, 2; WAITFOR DELAY '00:00:04'; COMMIT;" 2>&1 } -ArgumentList $Servidor, $p1, $hoy
 Start-Sleep -Seconds 1
-$b = Start-Job -ScriptBlock { param($s, $p, $f) sqlcmd -S $s -E -d GestionPropiedadesCondado -h -1 -W -Q "SET NOCOUNT ON; EXEC SP_Operacion_Insert 'Alquiler', '$f', 2, $p, 2;" 2>&1 } -ArgumentList $Servidor, $p1, $hoy
+$b = Start-Job -ScriptBlock { param($s, $p, $f) sqlcmd -S $s -E -I -d GestionPropiedadesCondado -h -1 -W -Q "SET NOCOUNT ON; EXEC SP_Operacion_Insert 'Alquiler', '$f', 2, $p, 2;" 2>&1 } -ArgumentList $Servidor, $p1, $hoy
 $ra = Receive-Job $a -Wait; $rb = Receive-Job $b -Wait
 Remove-Job $a, $b
 Esperar "La segunda sesión recibe 'La propiedad ya no está disponible.'" ("$rb" -match "ya no est")

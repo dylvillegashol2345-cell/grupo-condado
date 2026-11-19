@@ -14,7 +14,7 @@ function Ingresar($usuario, $clave) {
     return @($r)[0]
 }
 function Guardada($nombreUsuario) {
-    (sqlcmd -S $Servidor -E -d GestionPropiedadesCondado -h -1 -W -Q "SET NOCOUNT ON; SELECT Contrasena FROM Usuario WHERE NombreUsuario = N'$nombreUsuario'" | Select-Object -First 1).Trim()
+    (sqlcmd -S $Servidor -E -I -d GestionPropiedadesCondado -h -1 -W -Q "SET NOCOUNT ON; SELECT Contrasena FROM Usuario WHERE NombreUsuario = N'$nombreUsuario'" | Select-Object -First 1).Trim()
 }
 function Registrar($nombre, $clave) {
     $cuerpo = [Text.Encoding]::UTF8.GetBytes((@{ Nombre = $nombre; Email = "$nombre@correo.com"; Telefono = "+5493510000000"; Contrasena = $clave; IdRol = 3 } | ConvertTo-Json -Compress))
@@ -54,7 +54,7 @@ Esperar "Después del ingreso queda en PBKDF2" ((Guardada "cliente").StartsWith(
 "      Tiempo del ingreso: $($reloj.ElapsedMilliseconds) ms"
 
 # Limpieza
-sqlcmd -S $Servidor -E -d GestionPropiedadesCondado -Q "SET NOCOUNT ON; DELETE FROM Usuario WHERE NombreUsuario IN (N'$a', N'$b');" | Out-Null
+sqlcmd -S $Servidor -E -I -d GestionPropiedadesCondado -Q "SET NOCOUNT ON; DELETE FROM Usuario WHERE NombreUsuario IN (N'$a', N'$b');" | Out-Null
 
 ""
 if ($fallas -eq 0) { "Todas las pruebas de contraseñas pasaron." } else { "$fallas prueba(s) fallaron."; exit 1 }

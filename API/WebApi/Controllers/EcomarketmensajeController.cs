@@ -46,7 +46,7 @@ namespace WebApi.Controllers
             oMensaje.Texto = value.Texto;
             string resultado = oMensaje.Guardar();
             if (resultado != "OK")
-                return InternalServerError(new Exception(resultado));
+                return ErroresSql.Fallo(this, resultado);
             return Ok();
         }
 
@@ -60,7 +60,7 @@ namespace WebApi.Controllers
             oMensaje.IdUsuario = Permisos.IdUsuario(User);
             string resultado = oMensaje.MarcarLeido();
             if (resultado != "OK")
-                return InternalServerError(new Exception(resultado));
+                return ErroresSql.Fallo(this, resultado);
             return Ok();
         }
     }

@@ -4,6 +4,10 @@
    Ejecutar con:  sqlcmd -S <servidor> -E -b -f 65001 -i Parche_v1.0_correcciones.sql
    (-b corta en el primer error; con XACT_ABORT la transacción se deshace entera)
    ============================================================ */
+-- Con estas opciones se crean los procedimientos: el índice filtrado de Cita las exige
+SET QUOTED_IDENTIFIER ON;
+SET ANSI_NULLS ON;
+GO
 USE [GestionPropiedadesCondado];
 GO
 SET XACT_ABORT ON;
@@ -196,6 +200,81 @@ GO
 -- Datos existentes: las publicadas sin documentación pasan a no publicadas
 UPDATE Propiedad SET Publicada = 0
 WHERE Publicada = 1 AND (ISNULL(MatriculaVerificada, 0) = 0 OR ISNULL(TituloPropiedad, 0) = 0);
+GO
+
+/* ----------------------------------------------------------
+   CORRECCIONES v1.0 - Tarea 8: restricciones de integridad (Anexo C.3)
+   Primero se corrigen los datos de demostración que no las cumplen.
+   ---------------------------------------------------------- */
+
+-- Propiedades sin propietario.
+-- a) Si el contrato de la propiedad ya nombra al dueño, ese es el propietario (se lo carga si no existía)
+INSERT INTO Propietario (Nombre, Apellido, DNI, TipoDocumento)
+SELECT DISTINCT
+    LEFT(LTRIM(c.LocadorNombre), CHARINDEX(' ', LTRIM(c.LocadorNombre) + ' ') - 1),
+    LTRIM(SUBSTRING(LTRIM(c.LocadorNombre), CHARINDEX(' ', LTRIM(c.LocadorNombre) + ' ') + 1, 100)),
+    c.LocadorDni, N'DNI'
+FROM Contrato c
+JOIN Operacion o ON o.IdOperacion = c.IdOperacion
+JOIN Propiedad p ON p.IdPropiedad = o.IdPropiedad
+WHERE p.IdPropietario IS NULL AND ISNULL(c.LocadorDni, '') <> ''
+  AND NOT EXISTS (SELECT 1 FROM Propietario pr WHERE pr.DNI = c.LocadorDni);
+
+UPDATE p SET IdPropietario = pr.IdPropietario
+FROM Propiedad p
+JOIN Operacion o ON o.IdPropiedad = p.IdPropiedad
+JOIN Contrato c ON c.IdOperacion = o.IdOperacion
+JOIN Propietario pr ON pr.DNI = c.LocadorDni
+WHERE p.IdPropietario IS NULL AND ISNULL(c.LocadorDni, '') <> '';
+
+-- b) El resto se reparte entre los propietarios que tienen menos propiedades
+WITH sin AS (
+    SELECT IdPropiedad, ROW_NUMBER() OVER (ORDER BY IdPropiedad) - 1 AS n
+    FROM Propiedad WHERE IdPropietario IS NULL
+), duenios AS (
+    SELECT pr.IdPropietario, COUNT(*) OVER () AS total,
+           ROW_NUMBER() OVER (ORDER BY (SELECT COUNT(*) FROM Propiedad x WHERE x.IdPropietario = pr.IdPropietario), pr.IdPropietario) - 1 AS n
+    FROM Propietario pr
+)
+UPDATE p SET IdPropietario = d.IdPropietario
+FROM Propiedad p
+JOIN sin s ON s.IdPropiedad = p.IdPropiedad
+JOIN duenios d ON d.n = s.n % d.total;
+
+-- c) Los contratos sin locador cargado toman los datos del propietario
+UPDATE c SET LocadorNombre = LTRIM(RTRIM(ISNULL(pr.Nombre, '') + ' ' + ISNULL(pr.Apellido, ''))),
+             LocadorDni = pr.DNI,
+             LocadorDomicilio = LTRIM(RTRIM(ISNULL(pr.Calle, '') + ' ' + ISNULL(pr.Numeracion, '')))
+FROM Contrato c
+JOIN Operacion o ON o.IdOperacion = c.IdOperacion
+JOIN Propiedad p ON p.IdPropiedad = o.IdPropiedad
+JOIN Propietario pr ON pr.IdPropietario = p.IdPropietario
+WHERE ISNULL(c.LocadorNombre, '') = '';
+
+-- Piso y número de depto: vacío es "sin dato", igual que NULL
+UPDATE Propiedad SET Piso = NULL WHERE Piso = '';
+UPDATE Propiedad SET NroDepto = NULL WHERE NroDepto = '';
+GO
+
+IF OBJECT_ID(N'FK_Propiedad_Propietario', N'F') IS NULL
+    ALTER TABLE Propiedad ADD CONSTRAINT FK_Propiedad_Propietario
+        FOREIGN KEY (IdPropietario) REFERENCES Propietario (IdPropietario);
+IF OBJECT_ID(N'CK_Propiedad_Estado', N'C') IS NULL
+    ALTER TABLE Propiedad ADD CONSTRAINT CK_Propiedad_Estado
+        CHECK (Estado IN ('Disponible', 'Reservada', 'Alquilada', 'Vendida'));
+IF OBJECT_ID(N'CK_Propiedad_Publicada', N'C') IS NULL
+    ALTER TABLE Propiedad ADD CONSTRAINT CK_Propiedad_Publicada
+        CHECK (Publicada = 0 OR (MatriculaVerificada = 1 AND TituloPropiedad = 1));
+IF OBJECT_ID(N'CK_Contrato_Fechas', N'C') IS NULL
+    ALTER TABLE Contrato ADD CONSTRAINT CK_Contrato_Fechas CHECK (FechaFin > FechaInicio);
+IF OBJECT_ID(N'CK_Pago_Monto', N'C') IS NULL
+    ALTER TABLE Pago ADD CONSTRAINT CK_Pago_Monto CHECK (Monto > 0);
+IF OBJECT_ID(N'UQ_Usuario_Email', N'UQ') IS NULL
+    ALTER TABLE Usuario ADD CONSTRAINT UQ_Usuario_Email UNIQUE (Email);
+-- Las citas sin agente quedan afuera: no se pisan entre sí
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'UX_Cita_Agenda' AND object_id = OBJECT_ID(N'Cita'))
+    CREATE UNIQUE INDEX UX_Cita_Agenda ON Cita (IdUsuario, Fecha, Hora)
+        WHERE Estado <> 'Cancelada' AND IdUsuario IS NOT NULL;
 GO
 COMMIT;
 GO

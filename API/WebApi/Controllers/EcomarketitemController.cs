@@ -60,7 +60,7 @@ namespace WebApi.Controllers
 
             string resultado = oItem.Guardar();
             if (resultado != "OK")
-                return InternalServerError(new Exception(resultado));
+                return ErroresSql.Fallo(this, resultado);
 
             return Ok();
         }
@@ -75,7 +75,7 @@ namespace WebApi.Controllers
 
             string resultado = oItem.ActualizarEstado();
             if (resultado != "OK")
-                return InternalServerError(new Exception(resultado));
+                return ErroresSql.Fallo(this, resultado);
 
             return Ok();
         }
@@ -89,7 +89,7 @@ namespace WebApi.Controllers
 
             string resultado = oItem.Eliminar();
             if (resultado != "OK")
-                return InternalServerError(new Exception(resultado));
+                return ErroresSql.Fallo(this, resultado);
 
             return Ok();
         }

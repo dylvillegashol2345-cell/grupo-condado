@@ -40,8 +40,8 @@ namespace WebApi.Controllers
                 oPropiedad.Barrio = value.Barrio;
                 oPropiedad.Calle = value.Calle;
                 oPropiedad.Numeracion = value.Numeracion;
-                oPropiedad.Piso = value.Piso;
-                oPropiedad.NroDepto = value.NroDepto;
+                oPropiedad.Piso = string.IsNullOrWhiteSpace(value.Piso) ? null : value.Piso;
+                oPropiedad.NroDepto = string.IsNullOrWhiteSpace(value.NroDepto) ? null : value.NroDepto;
                 oPropiedad.IdTipo = value.IdTipo;
                 oPropiedad.IdLocalidad = value.IdLocalidad;
                 oPropiedad.Precio = value.Precio;
@@ -83,8 +83,8 @@ namespace WebApi.Controllers
                 oPropiedad.Barrio = value.Barrio;
                 oPropiedad.Calle = value.Calle;
                 oPropiedad.Numeracion = value.Numeracion;
-                oPropiedad.Piso = value.Piso;
-                oPropiedad.NroDepto = value.NroDepto;
+                oPropiedad.Piso = string.IsNullOrWhiteSpace(value.Piso) ? null : value.Piso;
+                oPropiedad.NroDepto = string.IsNullOrWhiteSpace(value.NroDepto) ? null : value.NroDepto;
                 oPropiedad.IdTipo = value.IdTipo;
                 oPropiedad.IdLocalidad = value.IdLocalidad;
                 oPropiedad.Precio = value.Precio;

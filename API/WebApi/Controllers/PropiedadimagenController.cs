@@ -36,7 +36,7 @@ namespace WebApi.Controllers
             o.Orden = value.Orden;
             o.EsPrincipal = value.EsPrincipal;
             string r = o.Guardar();
-            if (r != "OK") return InternalServerError(new Exception(r));
+            if (r != "OK") return ErroresSql.Fallo(this, r);
             return Ok();
         }
 
@@ -49,7 +49,7 @@ namespace WebApi.Controllers
             PropiedadImagen o = new PropiedadImagen();
             o.IdImagen = idImagen;
             string r = o.Eliminar();
-            if (r != "OK") return InternalServerError(new Exception(r));
+            if (r != "OK") return ErroresSql.Fallo(this, r);
             return Ok();
         }
 
@@ -62,7 +62,7 @@ namespace WebApi.Controllers
             PropiedadImagen o = new PropiedadImagen();
             o.IdPropiedad = idPropiedad;
             string r = o.EliminarTodas();
-            if (r != "OK") return InternalServerError(new Exception(r));
+            if (r != "OK") return ErroresSql.Fallo(this, r);
             return Ok();
         }
 
@@ -76,7 +76,7 @@ namespace WebApi.Controllers
             o.IdImagen = value.IdImagen;
             o.IdPropiedad = value.IdPropiedad;
             string r = o.SetPrincipal();
-            if (r != "OK") return InternalServerError(new Exception(r));
+            if (r != "OK") return ErroresSql.Fallo(this, r);
             return Ok();
         }
     }

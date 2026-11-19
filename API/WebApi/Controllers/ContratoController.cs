@@ -35,7 +35,7 @@ namespace WebApi.Controllers
                 value.Guardar();
                 return Ok();
             }
-            catch (System.Exception ex) { return InternalServerError(ex); }
+            catch (System.Exception ex) { return ErroresSql.Respuesta(this, ex); }
         }
 
         [Rol(Roles = Permisos.Personal)]
@@ -49,7 +49,7 @@ namespace WebApi.Controllers
                 value.Editar();
                 return Ok();
             }
-            catch (System.Exception ex) { return InternalServerError(ex); }
+            catch (System.Exception ex) { return ErroresSql.Respuesta(this, ex); }
         }
 
         [Rol(Roles = Permisos.Personal)]
@@ -62,7 +62,7 @@ namespace WebApi.Controllers
                 o.Eliminar();
                 return Ok();
             }
-            catch (System.Exception ex) { return InternalServerError(ex); }
+            catch (System.Exception ex) { return ErroresSql.Respuesta(this, ex); }
         }
     }
 }

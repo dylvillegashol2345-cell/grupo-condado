@@ -16,6 +16,7 @@ namespace WebApi
             // y el filtro exige sesión en toda la API, salvo las acciones marcadas [AllowAnonymous]
             config.MessageHandlers.Add(new TokenAuthHandler());
             config.Filters.Add(new RolAttribute());
+            config.Filters.Add(new ErroresFilter());
 
             // Rutas de API web
             config.MapHttpAttributeRoutes();

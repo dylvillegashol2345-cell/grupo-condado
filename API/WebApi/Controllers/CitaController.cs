@@ -38,7 +38,7 @@ namespace WebApi.Controllers
             }
             catch (Exception ex)
             {
-                return InternalServerError(ex);
+                return ErroresSql.Respuesta(this, ex);
             }
         }
 
@@ -53,7 +53,7 @@ namespace WebApi.Controllers
             }
             catch (Exception ex)
             {
-                return InternalServerError(ex);
+                return ErroresSql.Respuesta(this, ex);
             }
         }
 

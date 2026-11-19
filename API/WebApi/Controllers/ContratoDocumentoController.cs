@@ -28,7 +28,7 @@ namespace WebApi.Controllers
                 value.Guardar();
                 return Ok();
             }
-            catch (System.Exception ex) { return InternalServerError(ex); }
+            catch (System.Exception ex) { return ErroresSql.Respuesta(this, ex); }
         }
     }
 }

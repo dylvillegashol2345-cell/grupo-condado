@@ -58,7 +58,7 @@ namespace WebApi.Controllers
 
             string resultado = oContacto.Guardar();
             if (resultado != "OK")
-                return InternalServerError(new Exception(resultado));
+                return ErroresSql.Fallo(this, resultado);
 
             return Ok();
         }

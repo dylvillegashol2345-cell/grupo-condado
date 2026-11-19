@@ -57,7 +57,7 @@ namespace WebApi.Controllers
                 return Content(HttpStatusCode.Conflict, "EMAIL_DUPLICADO");
 
             if (resultado != "OK")
-                return InternalServerError(new Exception(resultado));
+                return ErroresSql.Fallo(this, resultado);
 
             return Ok();
         }
