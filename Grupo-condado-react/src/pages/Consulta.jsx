@@ -79,8 +79,8 @@ function Consulta() {
       toast("Consulta enviada", "ok");
       setForm((f) => ({ ...f, propiedad: propiedadFija ? f.propiedad : "", mensaje: "" }));
       timer.current = setTimeout(() => setMensajeUI(null), 5000);
-    } catch {
-      setMensajeUI({ tipo: "error", texto: "Error al enviar. Verificá tu conexión y volvé a intentarlo." });
+    } catch (err) {
+      setMensajeUI({ tipo: "error", texto: err.status === 400 ? err.message : "Error al enviar. Verificá tu conexión y volvé a intentarlo." });
     } finally {
       setEnviando(false);
     }

@@ -276,5 +276,67 @@ IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'UX_Cita_Agenda' AND obje
     CREATE UNIQUE INDEX UX_Cita_Agenda ON Cita (IdUsuario, Fecha, Hora)
         WHERE Estado <> 'Cancelada' AND IdUsuario IS NOT NULL;
 GO
+
+/* ----------------------------------------------------------
+   CORRECCIONES v1.0 - Tarea 7: RN8 y RN9 validadas en el servidor
+   ---------------------------------------------------------- */
+
+-- RN8: hasta 3 consultas por día. Consulta no guarda el usuario (la app móvil consulta sin sesión),
+-- así que se cuenta por teléfono: los últimos 10 dígitos, que son iguales con +54 o con +549.
+CREATE OR ALTER PROCEDURE SP_Consulta_Insert @Nombre NVARCHAR(100),@Telefono NVARCHAR(20),@Mensaje NVARCHAR(1000),@PropiedadInteres NVARCHAR(200),@Fecha DATETIME AS
+BEGIN
+    SET NOCOUNT ON;
+    DECLARE @Tel NVARCHAR(20) = RIGHT(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(ISNULL(@Telefono, ''), '+', ''), ' ', ''), '-', ''), '(', ''), ')', ''), 10);
+    IF LEN(@Tel) = 10 AND (
+        SELECT COUNT(*) FROM Consulta
+        WHERE CAST(Fecha AS DATE) = CAST(GETDATE() AS DATE)
+          AND RIGHT(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(ISNULL(Telefono, ''), '+', ''), ' ', ''), '-', ''), '(', ''), ')', ''), 10) = @Tel
+    ) >= 3
+        THROW 50003, 'Ya enviaste 3 consultas hoy. Podés volver a consultar mañana.', 1;
+    INSERT INTO Consulta(Nombre,Telefono,Mensaje,PropiedadInteres,Fecha) VALUES(@Nombre,@Telefono,@Mensaje,@PropiedadInteres,@Fecha);
+END;
+GO
+
+-- RN9: no se agenda en una fecha pasada, y una visita ocupa al agente una hora
+-- (igual que utils/citas.js del front). Las canceladas no cuentan.
+CREATE OR ALTER PROCEDURE SP_Cita_Insert
+  @Fecha DATE, @Hora TIME = NULL, @Estado NVARCHAR(20) = 'Pendiente', @Notas NVARCHAR(500) = NULL,
+  @Contacto NVARCHAR(150) = NULL, @Telefono NVARCHAR(30) = NULL,
+  @IdCliente INT = NULL, @IdUsuario INT = NULL, @IdPropiedad INT = NULL, @IdConsulta INT = NULL
+AS BEGIN
+  SET NOCOUNT ON;
+  IF @Fecha < CAST(GETDATE() AS DATE)
+      THROW 50005, 'No se puede agendar una cita en una fecha pasada.', 1;
+  IF ISNULL(@Estado, 'Pendiente') <> 'Cancelada' AND @IdUsuario IS NOT NULL AND @Hora IS NOT NULL AND EXISTS (
+      SELECT 1 FROM Cita
+      WHERE IdUsuario = @IdUsuario AND Fecha = @Fecha AND Estado <> 'Cancelada' AND Hora IS NOT NULL
+        AND ABS(DATEDIFF(MINUTE, Hora, @Hora)) < 60)
+      THROW 50006, 'Ese agente ya tiene una cita a menos de una hora de ese horario. Las visitas duran una hora.', 1;
+  INSERT INTO Cita (Fecha, Hora, Estado, Notas, Contacto, Telefono, IdCliente, IdUsuario, IdPropiedad, IdConsulta)
+  VALUES (@Fecha, @Hora, ISNULL(@Estado, 'Pendiente'), @Notas, @Contacto, @Telefono, @IdCliente, @IdUsuario, @IdPropiedad, @IdConsulta);
+  SELECT CAST(SCOPE_IDENTITY() AS INT) AS IdCita;
+END;
+GO
+
+CREATE OR ALTER PROCEDURE SP_Cita_Update
+  @IdCita INT, @Fecha DATE, @Hora TIME = NULL, @Estado NVARCHAR(20) = 'Pendiente', @Notas NVARCHAR(500) = NULL,
+  @Contacto NVARCHAR(150) = NULL, @Telefono NVARCHAR(30) = NULL,
+  @IdCliente INT = NULL, @IdUsuario INT = NULL, @IdPropiedad INT = NULL, @IdConsulta INT = NULL
+AS BEGIN
+  SET NOCOUNT ON;
+  -- Una cita ya pasada se puede seguir editando (por ejemplo, marcarla Realizada); lo que no se puede es moverla al pasado
+  IF @Fecha < CAST(GETDATE() AS DATE) AND NOT EXISTS (SELECT 1 FROM Cita WHERE IdCita = @IdCita AND Fecha = @Fecha)
+      THROW 50005, 'No se puede agendar una cita en una fecha pasada.', 1;
+  IF ISNULL(@Estado, 'Pendiente') <> 'Cancelada' AND @IdUsuario IS NOT NULL AND @Hora IS NOT NULL AND EXISTS (
+      SELECT 1 FROM Cita
+      WHERE IdCita <> @IdCita AND IdUsuario = @IdUsuario AND Fecha = @Fecha AND Estado <> 'Cancelada' AND Hora IS NOT NULL
+        AND ABS(DATEDIFF(MINUTE, Hora, @Hora)) < 60)
+      THROW 50006, 'Ese agente ya tiene una cita a menos de una hora de ese horario. Las visitas duran una hora.', 1;
+  UPDATE Cita SET Fecha = @Fecha, Hora = @Hora, Estado = ISNULL(@Estado, 'Pendiente'), Notas = @Notas,
+         Contacto = @Contacto, Telefono = @Telefono, IdCliente = @IdCliente, IdUsuario = @IdUsuario,
+         IdPropiedad = @IdPropiedad, IdConsulta = @IdConsulta
+  WHERE IdCita = @IdCita;
+END;
+GO
 COMMIT;
 GO
