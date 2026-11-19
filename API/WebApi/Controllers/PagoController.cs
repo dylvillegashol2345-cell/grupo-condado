@@ -6,19 +6,30 @@ namespace WebApi.Controllers
 {
     public class PagoController : ApiController
     {
+        [Rol(Roles = Permisos.Todos)]
         public DataTable Get()
         {
             Pago o = new Pago();
-            return o.ListarTodos();
+            DataTable t = o.ListarTodos();
+            if (Permisos.EsPersonal(User)) return t;
+            var propios = Permisos.ContratosDelCliente(Permisos.IdCliente(User));
+            return Permisos.Filtrar(t, f => propios.Contains(Permisos.Entero(f, "IdContrato")));
         }
 
+        [Rol(Roles = Permisos.Todos)]
         public DataTable Get(int id)
         {
             Pago o = new Pago();
             o.IdPago = id;
-            return o.ListarPorId();
+            DataTable t = o.ListarPorId();
+            if (Permisos.EsPersonal(User)) return t;
+            var propios = Permisos.ContratosDelCliente(Permisos.IdCliente(User));
+            foreach (DataRow f in t.Rows)
+                if (!propios.Contains(Permisos.Entero(f, "IdContrato"))) throw Permisos.SinPermiso();
+            return t;
         }
 
+        [Rol(Roles = Permisos.Personal)]
         public IHttpActionResult Post([FromBody] Pago value)
         {
             try
@@ -34,6 +45,7 @@ namespace WebApi.Controllers
             catch (System.Exception ex) { return InternalServerError(ex); }
         }
 
+        [Rol(Roles = Permisos.Personal)]
         public IHttpActionResult Put(int id, [FromBody] Pago value)
         {
             try
@@ -50,6 +62,7 @@ namespace WebApi.Controllers
             catch (System.Exception ex) { return InternalServerError(ex); }
         }
 
+        [Rol(Roles = Permisos.Personal)]
         public IHttpActionResult Delete(int id)
         {
             try

@@ -11,6 +11,7 @@ using WebApi.Models;
 
 namespace WebApi.Controllers
 {
+    [Rol(Roles = Permisos.Personal)]
     public class CitaController : ApiController
     {
         // GET: api/Cita

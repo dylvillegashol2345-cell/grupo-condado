@@ -11,6 +11,7 @@ using WebApi.Models;
 
 namespace WebApi.Controllers
 {
+    [Rol(Roles = Permisos.Admin)]
     public class RolController : ApiController
     {
         // GET: api/Rol

@@ -12,6 +12,15 @@ namespace WebApi.Controllers
 {
     public class EcoMarketItemController : ApiController
     {
+        bool EsDelUsuario(int idItem)
+        {
+            if (Permisos.EsAdmin(User)) return true;
+            EcoMarketItem o = new EcoMarketItem();
+            o.IdItem = idItem;
+            DataTable t = o.ListarPorId();
+            return t.Rows.Count > 0 && Permisos.Entero(t.Rows[0], "IdUsuario") == Permisos.IdUsuario(User);
+        }
+
         // GET: api/EcoMarketItem
         public DataTable Get()
         {
@@ -41,7 +50,7 @@ namespace WebApi.Controllers
         public IHttpActionResult Post([FromBody] EcoMarketItem value)
         {
             EcoMarketItem oItem = new EcoMarketItem();
-            oItem.IdUsuario = value.IdUsuario;
+            oItem.IdUsuario = Permisos.IdUsuario(User);
             oItem.Titulo = value.Titulo;
             oItem.Descripcion = value.Descripcion;
             oItem.Categoria = value.Categoria;
@@ -59,6 +68,7 @@ namespace WebApi.Controllers
         // PUT: api/EcoMarketItem/5  (cambiar Estado: Disponible / Reservado / Entregado)
         public IHttpActionResult Put(int id, [FromBody] EcoMarketItem value)
         {
+            if (!EsDelUsuario(id)) throw Permisos.SinPermiso();
             EcoMarketItem oItem = new EcoMarketItem();
             oItem.IdItem = id;
             oItem.Estado = value.Estado;
@@ -73,6 +83,7 @@ namespace WebApi.Controllers
         // DELETE: api/EcoMarketItem/5
         public IHttpActionResult Delete(int id)
         {
+            if (!EsDelUsuario(id)) throw Permisos.SinPermiso();
             EcoMarketItem oItem = new EcoMarketItem();
             oItem.IdItem = id;
 

@@ -15,16 +15,42 @@ const MSG_SIN_API =
   "No se pudo conectar con la API. Verificá que el proyecto WebApi esté corriendo en " +
   (API_URL.replace(/\/api$/, "") || "localhost:56153") + ".";
 
+// La sesión que guarda AuthProvider trae el token que devolvió /api/Login
+function sesionGuardada() {
+  try {
+    return JSON.parse(localStorage.getItem("usuarioLogueado") || "null");
+  } catch {
+    return null;
+  }
+}
+
 async function request(path, { method = "GET", body } = {}) {
+  const sesion = sesionGuardada();
+  const headers = {
+    ...(body && { "Content-Type": "application/json" }),
+    ...(sesion?.Token && { Authorization: `Bearer ${sesion.Token}` }),
+  };
+
   let res;
   try {
     res = await fetch(`${API_URL}${path}`, {
       method,
-      headers: body ? { "Content-Type": "application/json" } : undefined,
+      headers,
       body: body ? JSON.stringify(body) : undefined,
     });
   } catch {
     throw new ApiError(MSG_SIN_API, 0);
+  }
+
+  // Con un usuario conectado, un 401 es una sesión vencida o cerrada: se vuelve al ingreso.
+  // El invitado no tiene sesión, así que a él no se lo saca.
+  if (res.status === 401 && sesion) {
+    localStorage.removeItem("usuarioLogueado");
+    if (!window.location.pathname.startsWith("/login")) window.location.assign("/login");
+    throw new ApiError("Tu sesión venció. Volvé a ingresar.", 401);
+  }
+  if (res.status === 403) {
+    throw new ApiError("No tenés permiso para esta acción", 403);
   }
 
   if (!res.ok) {

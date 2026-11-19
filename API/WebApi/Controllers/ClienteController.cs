@@ -6,19 +6,26 @@ namespace WebApi.Controllers
 {
     public class ClienteController : ApiController
     {
+        [Rol(Roles = Permisos.Todos)]
         public DataTable Get()
         {
             Cliente o = new Cliente();
-            return o.ListarTodos();
+            DataTable t = o.ListarTodos();
+            if (Permisos.EsPersonal(User)) return t;
+            int propio = Permisos.IdCliente(User);
+            return Permisos.Filtrar(t, f => Permisos.Entero(f, "IdCliente") == propio);
         }
 
+        [Rol(Roles = Permisos.Todos)]
         public DataTable Get(int id)
         {
+            if (!Permisos.EsPersonal(User) && Permisos.IdCliente(User) != id) throw Permisos.SinPermiso();
             Cliente o = new Cliente();
             o.IdCliente = id;
             return o.ListarPorId();
         }
 
+        [Rol(Roles = Permisos.Personal)]
         public IHttpActionResult Post([FromBody] Cliente value)
         {
             try
@@ -36,6 +43,7 @@ namespace WebApi.Controllers
             catch (System.Exception ex) { return InternalServerError(ex); }
         }
 
+        [Rol(Roles = Permisos.Personal)]
         public IHttpActionResult Put(int id, [FromBody] Cliente value)
         {
             try
@@ -54,6 +62,7 @@ namespace WebApi.Controllers
             catch (System.Exception ex) { return InternalServerError(ex); }
         }
 
+        [Rol(Roles = Permisos.Personal)]
         public IHttpActionResult Delete(int id)
         {
             try

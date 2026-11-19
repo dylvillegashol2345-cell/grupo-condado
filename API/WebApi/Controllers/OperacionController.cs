@@ -13,21 +13,32 @@ namespace WebApi.Controllers
     public class OperacionController : ApiController
     {
         // GET: api/Operacion
+        [Rol(Roles = Permisos.Todos)]
         public DataTable Get()
         {
             Operacion oOperacion = new Operacion();
-            return oOperacion.ListarTodos();
+            DataTable t = oOperacion.ListarTodos();
+            if (Permisos.EsPersonal(User)) return t;
+            int propio = Permisos.IdCliente(User);
+            return Permisos.Filtrar(t, f => propio != 0 && Permisos.Entero(f, "IdCliente") == propio);
         }
 
         // GET: api/Operacion/5
+        [Rol(Roles = Permisos.Todos)]
         public DataTable Get(int id)
         {
             Operacion oOperacion = new Operacion();
             oOperacion.IdOperacion = id;
-            return oOperacion.ListarPorId();
+            DataTable t = oOperacion.ListarPorId();
+            if (Permisos.EsPersonal(User)) return t;
+            int propio = Permisos.IdCliente(User);
+            foreach (DataRow f in t.Rows)
+                if (propio == 0 || Permisos.Entero(f, "IdCliente") != propio) throw Permisos.SinPermiso();
+            return t;
         }
 
         // POST: api/Operacion
+        [Rol(Roles = Permisos.Personal)]
         public string Post([FromBody] Operacion value)
         {
             Operacion oOperacion = new Operacion();
@@ -42,6 +53,7 @@ namespace WebApi.Controllers
         }
 
         // PUT: api/Operacion/5
+        [Rol(Roles = Permisos.Personal)]
         public void Put(int id, [FromBody] Operacion value)
         {
             Operacion oOperacion = new Operacion();
@@ -55,6 +67,7 @@ namespace WebApi.Controllers
         }
 
         // DELETE: api/Operacion/5
+        [Rol(Roles = Permisos.Personal)]
         public void Delete(int id)
         {
             Operacion oOperacion = new Operacion();

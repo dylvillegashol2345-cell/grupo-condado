@@ -11,6 +11,7 @@ using WebApi.Models;
 
 namespace WebApi.Controllers
 {
+    [Rol(Roles = Permisos.Personal)]
     public class PropietarioController : ApiController
     {
         // GET: api/Propietario

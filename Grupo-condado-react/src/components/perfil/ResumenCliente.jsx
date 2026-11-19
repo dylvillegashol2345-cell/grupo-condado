@@ -16,7 +16,7 @@ function ResumenCliente({ usuario }) {
 
   const resumen = useMemo(() => {
     if (!datos) return null;
-    const misOps = datos.ops.filter((o) => Number(o.IdCliente) === Number(usuario.IdUsuario));
+    const misOps = datos.ops;
     const misContratos = [];
     misOps.forEach((op) => {
       datos.cts

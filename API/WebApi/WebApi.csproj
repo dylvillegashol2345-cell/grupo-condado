@@ -168,6 +168,9 @@
     <Compile Include="Areas\HelpPage\SampleGeneration\SampleDirection.cs" />
     <Compile Include="Areas\HelpPage\SampleGeneration\TextSample.cs" />
     <Compile Include="Areas\HelpPage\XmlDocumentationProvider.cs" />
+    <Compile Include="Seguridad\Permisos.cs" />
+    <Compile Include="Seguridad\RolAttribute.cs" />
+    <Compile Include="Seguridad\TokenAuthHandler.cs" />
     <Compile Include="Controllers\CitaController.cs" />
     <Compile Include="Controllers\ClienteController.cs" />
     <Compile Include="Controllers\ConsultaController.cs" />
@@ -202,6 +205,7 @@
     <Compile Include="Models\Propiedad.cs" />
     <Compile Include="Models\Propietario.cs" />
     <Compile Include="Models\Rol.cs" />
+    <Compile Include="Models\Sesion.cs" />
     <Compile Include="Models\Usuario.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

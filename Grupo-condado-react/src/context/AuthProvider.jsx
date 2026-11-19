@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { AuthContext, puedeVer } from "./authContext";
-import { login as loginApi } from "../services/entidades";
+import { login as loginApi, logout as logoutApi } from "../services/entidades";
 
 const CLAVE_USUARIO  = "usuarioLogueado";
 const CLAVE_INVITADO = "sesionInvitado";
@@ -44,6 +44,8 @@ function AuthProvider({ children }) {
   }, []);
 
   const cerrarSesion = useCallback(() => {
+    // Revoca el token en el servidor; si la API no responde, igual se cierra en el navegador
+    if (leerSesion()?.Token) logoutApi().catch(() => {});
     setUsuario(null);
     setInvitado(false);
   }, []);

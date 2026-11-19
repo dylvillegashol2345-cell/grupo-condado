@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { propiedades, operaciones } from "../../services/entidades";
+import { propiedades } from "../../services/entidades";
 import { useAuth } from "../../context/authContext";
 import { generarRespuesta, enriquecerConContexto, renderMarkdownBasico } from "../../utils/chatbot";
 
@@ -37,8 +37,8 @@ function Chatbot() {
   const cargarDatos = useCallback(async () => {
     if (datos.current) return datos.current;
     try {
-      const [props, ops] = await Promise.all([propiedades.listar(), operaciones.listar()]);
-      datos.current = { props: Array.isArray(props) ? props : [], ops: Array.isArray(ops) ? ops : [] };
+      const props = await propiedades.listar();
+      datos.current = { props: Array.isArray(props) ? props : [], ops: [] };
       return datos.current;
     } catch {
       return { props: [], ops: [] };

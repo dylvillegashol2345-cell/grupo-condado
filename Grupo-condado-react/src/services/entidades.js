@@ -23,6 +23,10 @@ export async function login(nombre, contrasena, captchaToken) {
   return filas.length ? filas[0] : null;
 }
 
+export function logout() {
+  return api.post("/Login/Logout");
+}
+
 export function registrar({ nombre, email, telefono, contrasena, rol = "Cliente" }) {
   return api.post("/Usuario", {
     Nombre: nombre,

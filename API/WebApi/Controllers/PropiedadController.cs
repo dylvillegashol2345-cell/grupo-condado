@@ -9,21 +9,28 @@ namespace WebApi.Controllers
     public class PropiedadController : ApiController
     {
         // GET: api/Propiedad
+        [AllowAnonymous]
         public DataTable Get()
         {
             Propiedad oPropiedad = new Propiedad();
-            return oPropiedad.ListarTodos();
+            DataTable t = oPropiedad.ListarTodos();
+            if (Permisos.EsPersonal(User)) return t;
+            return Permisos.Filtrar(t, f => Permisos.Verdadero(f, "Publicada"));
         }
 
         // GET: api/Propiedad/5
+        [AllowAnonymous]
         public DataTable Get(int id)
         {
             Propiedad oPropiedad = new Propiedad();
             oPropiedad.IdPropiedad = id;
-            return oPropiedad.ListarPorId();
+            DataTable t = oPropiedad.ListarPorId();
+            if (Permisos.EsPersonal(User)) return t;
+            return Permisos.Filtrar(t, f => Permisos.Verdadero(f, "Publicada"));
         }
 
         // POST: api/Propiedad — devuelve el IdPropiedad creado
+        [Rol(Roles = Permisos.Personal)]
         public IHttpActionResult Post([FromBody] Propiedad value)
         {
             try
@@ -65,6 +72,7 @@ namespace WebApi.Controllers
         }
 
         // PUT: api/Propiedad/5
+        [Rol(Roles = Permisos.Personal)]
         public IHttpActionResult Put(int id, [FromBody] Propiedad value)
         {
             try
@@ -106,6 +114,7 @@ namespace WebApi.Controllers
         }
 
         // DELETE: api/Propiedad/5
+        [Rol(Roles = Permisos.Personal)]
         public IHttpActionResult Delete(int id)
         {
             try

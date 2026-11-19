@@ -44,6 +44,7 @@ namespace WebApi.Controllers
         }
 
         // POST: api/Login
+        [AllowAnonymous]
         public DataTable Post([FromBody] Usuario value)
         {
             var vacio = new DataTable();
@@ -52,10 +53,25 @@ namespace WebApi.Controllers
             if (!CaptchaValido(value.CaptchaToken)) return vacio;
 
             Usuario oUsuario = new Usuario();
-            return oUsuario.Login(
-                value.Nombre,
-                value.Contrasena
-            );
+            DataTable t = oUsuario.Login(value.Nombre, value.Contrasena);
+            if (t.Rows.Count == 0) return t;
+
+            // Token de 8 horas que el navegador manda en cada solicitud
+            t.Columns.Add("Token", typeof(string));
+            t.Rows[0]["Token"] = new Sesion().Crear(Convert.ToInt32(t.Rows[0]["IdUsuario"]));
+            return t;
+        }
+
+        // POST: api/Login/Logout
+        [AllowAnonymous]
+        [HttpPost]
+        [Route("api/Login/Logout")]
+        public IHttpActionResult Logout()
+        {
+            var auth = Request.Headers.Authorization;
+            if (auth != null && auth.Scheme == "Bearer" && !string.IsNullOrEmpty(auth.Parameter))
+                new Sesion().Revocar(auth.Parameter);
+            return Ok();
         }
     }
 }

@@ -6,19 +6,27 @@ namespace WebApi.Controllers
 {
     public class ContratoController : ApiController
     {
+        [Rol(Roles = Permisos.Todos)]
         public DataTable Get()
         {
             Contrato o = new Contrato();
-            return o.ListarTodos();
+            DataTable t = o.ListarTodos();
+            if (Permisos.EsPersonal(User)) return t;
+            int propio = Permisos.IdCliente(User);
+            return Permisos.Filtrar(t, f => propio != 0 && Permisos.Entero(f, "IdCliente") == propio);
         }
 
+        [Rol(Roles = Permisos.Todos)]
         public DataTable Get(int id)
         {
+            if (!Permisos.EsPersonal(User) && !Permisos.ContratosDelCliente(Permisos.IdCliente(User)).Contains(id))
+                throw Permisos.SinPermiso();
             Contrato o = new Contrato();
             o.IdContrato = id;
             return o.ListarPorId();
         }
 
+        [Rol(Roles = Permisos.Personal)]
         public IHttpActionResult Post([FromBody] Contrato value)
         {
             if (value == null) return BadRequest("Cuerpo vacio o invalido");
@@ -30,6 +38,7 @@ namespace WebApi.Controllers
             catch (System.Exception ex) { return InternalServerError(ex); }
         }
 
+        [Rol(Roles = Permisos.Personal)]
         public IHttpActionResult Put(int id, [FromBody] Contrato value)
         {
             if (value == null) return BadRequest("Cuerpo vacio o invalido");
@@ -43,6 +52,7 @@ namespace WebApi.Controllers
             catch (System.Exception ex) { return InternalServerError(ex); }
         }
 
+        [Rol(Roles = Permisos.Personal)]
         public IHttpActionResult Delete(int id)
         {
             try

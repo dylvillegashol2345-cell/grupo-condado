@@ -10,16 +10,24 @@ namespace WebApi.Controllers
         // GET: api/PropiedadImagen/{idPropiedad}
         [HttpGet]
         [Route("api/PropiedadImagen/{idPropiedad}")]
+        [AllowAnonymous]
         public DataTable GetPorPropiedad(int idPropiedad)
         {
             PropiedadImagen o = new PropiedadImagen();
             o.IdPropiedad = idPropiedad;
-            return o.ListarPorPropiedad();
+            DataTable t = o.ListarPorPropiedad();
+            if (Permisos.EsPersonal(User)) return t;
+            Propiedad p = new Propiedad();
+            p.IdPropiedad = idPropiedad;
+            DataTable prop = p.ListarPorId();
+            bool publicada = prop.Rows.Count > 0 && Permisos.Verdadero(prop.Rows[0], "Publicada");
+            return publicada ? t : t.Clone();
         }
 
         // POST: api/PropiedadImagen
         [HttpPost]
         [Route("api/PropiedadImagen")]
+        [Rol(Roles = Permisos.Personal)]
         public IHttpActionResult Post([FromBody] PropiedadImagen value)
         {
             PropiedadImagen o = new PropiedadImagen();
@@ -35,6 +43,7 @@ namespace WebApi.Controllers
         // DELETE: api/PropiedadImagen/{idImagen}
         [HttpDelete]
         [Route("api/PropiedadImagen/{idImagen}")]
+        [Rol(Roles = Permisos.Personal)]
         public IHttpActionResult Delete(int idImagen)
         {
             PropiedadImagen o = new PropiedadImagen();
@@ -47,6 +56,7 @@ namespace WebApi.Controllers
         // DELETE: api/PropiedadImagen/Todas/{idPropiedad}
         [HttpDelete]
         [Route("api/PropiedadImagen/Todas/{idPropiedad}")]
+        [Rol(Roles = Permisos.Personal)]
         public IHttpActionResult DeleteTodas(int idPropiedad)
         {
             PropiedadImagen o = new PropiedadImagen();
@@ -59,6 +69,7 @@ namespace WebApi.Controllers
         // PUT: api/PropiedadImagen/SetPrincipal
         [HttpPut]
         [Route("api/PropiedadImagen/SetPrincipal")]
+        [Rol(Roles = Permisos.Personal)]
         public IHttpActionResult SetPrincipal([FromBody] PropiedadImagen value)
         {
             PropiedadImagen o = new PropiedadImagen();
