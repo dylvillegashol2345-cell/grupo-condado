@@ -122,6 +122,78 @@ namespace WebApi.Models
             }
         }
 
+        // Ingreso: devuelve la fila del usuario (sin la contraseña) o una tabla vacía
+        public DataTable Ingresar(string nombre, string contrasena)
+        {
+            DataTable candidatos = BuscarParaIngreso(nombre, null);
+            foreach (DataRow f in candidatos.Rows)
+            {
+                if (!Coincide(f, contrasena)) continue;
+                DataTable r = candidatos.Clone();
+                r.ImportRow(f);
+                r.Columns.Remove("Contrasena");
+                return r;
+            }
+            // Sin usuario con ese nombre se calcula igual un hash, para que la demora no lo delate
+            if (candidatos.Rows.Count == 0) Contrasenas.Hashear(contrasena ?? "");
+            candidatos.Clear();
+            candidatos.Columns.Remove("Contrasena");
+            return candidatos;
+        }
+
+        public bool VerificarContrasena(int idUsuario, string contrasena)
+        {
+            DataTable t = BuscarParaIngreso(null, idUsuario);
+            return t.Rows.Count > 0 && Coincide(t.Rows[0], contrasena);
+        }
+
+        bool Coincide(DataRow f, string contrasena)
+        {
+            if (string.IsNullOrEmpty(contrasena)) return false;
+            string guardada = Convert.ToString(f["Contrasena"]);
+            if (guardada.StartsWith(Contrasenas.Prefijo)) return Contrasenas.Verificar(contrasena, guardada);
+
+            // Contraseña vieja (SHA-256 sin sal): la valida el SP de siempre y, si es correcta, se migra a PBKDF2
+            int id = Convert.ToInt32(f["IdUsuario"]);
+            string nombre = f["NombreUsuario"] == DBNull.Value ? Convert.ToString(f["Nombre"]) : Convert.ToString(f["NombreUsuario"]);
+            foreach (DataRow r in Login(nombre, contrasena).Rows)
+            {
+                if (Convert.ToInt32(r["IdUsuario"]) != id) continue;
+                ActualizarContrasena(id, Contrasenas.Hashear(contrasena));
+                return true;
+            }
+            return false;
+        }
+
+        DataTable BuscarParaIngreso(string nombre, int? idUsuario)
+        {
+            using (SqlConnection cnn = new SqlConnection(connectionString))
+            {
+                SqlCommand cmd = new SqlCommand("SP_Usuario_GetLogin", cnn);
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.Parameters.Add("@Nombre", SqlDbType.NVarChar).Value = (object)nombre ?? DBNull.Value;
+                cmd.Parameters.Add("@IdUsuario", SqlDbType.Int).Value = (object)idUsuario ?? DBNull.Value;
+                SqlDataAdapter da = new SqlDataAdapter(cmd);
+                DataSet ds = new DataSet();
+                da.Fill(ds);
+                return ds.Tables[0];
+            }
+        }
+
+        public void ActualizarContrasena(int idUsuario, string hash)
+        {
+            using (SqlConnection cnn = new SqlConnection(connectionString))
+            {
+                SqlCommand cmd = new SqlCommand("SP_Usuario_UpdateContrasena", cnn);
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.Parameters.Add("@IdUsuario", SqlDbType.Int).Value = idUsuario;
+                cmd.Parameters.Add("@Contrasena", SqlDbType.NVarChar).Value = hash;
+                cnn.Open();
+                cmd.ExecuteNonQuery();
+            }
+        }
+
+        // SHA-256 en SQL: solo se usa para validar y migrar contraseñas viejas
         public DataTable Login(string nombre, string contrasena)
         {
             string sql = "SP_Usuario_Login";

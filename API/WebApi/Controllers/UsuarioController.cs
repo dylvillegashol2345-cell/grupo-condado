@@ -44,8 +44,10 @@ namespace WebApi.Controllers
             oUsuario.Nombre = value.Nombre;
             oUsuario.Email = value.Email;
             oUsuario.Telefono = value.Telefono;
-            oUsuario.Contrasena = value.Contrasena;
-            // Si viene IdRol 0 o no viene, asignar Cliente (3) por defecto
+            if (string.IsNullOrEmpty(value.Contrasena) || value.Contrasena.Length < 6)
+                return BadRequest("La contraseña debe tener al menos 6 caracteres");
+            // El hash lo calcula la API; la base recibe solo el texto PBKDF2$...
+            oUsuario.Contrasena = Contrasenas.Hashear(value.Contrasena);
             // Solo el Administrador elige el rol; el registro público siempre crea un Cliente
             oUsuario.IdRol = (Permisos.EsAdmin(User) && value.IdRol > 0) ? value.IdRol : 3;
 
@@ -77,12 +79,37 @@ namespace WebApi.Controllers
                 oUsuario.IdRol = actual.Rows.Count > 0 ? Permisos.Entero(actual.Rows[0], "IdRol") : 3;
             }
             oUsuario.Email = value.Email;
-            oUsuario.Contrasena = value.Contrasena;
+            // Solo el Administrador puede poner una contraseña nueva por acá (restablecerla);
+            // cada usuario cambia la suya con POST api/Usuario/Contrasena, que pide la actual
+            bool cambia = admin && !string.IsNullOrEmpty(value.Contrasena) && value.Contrasena != "___NOCHANGE___";
+            oUsuario.Contrasena = cambia ? Contrasenas.Hashear(value.Contrasena) : "___NOCHANGE___";
 
             oUsuario.Editar();
         }
 
         // DELETE: api/Usuario/5
+        public class CambioContrasena
+        {
+            public string Actual { get; set; }
+            public string Nueva { get; set; }
+        }
+
+        // POST: api/Usuario/Contrasena — "Mi perfil": verifica la actual en el servidor
+        [Rol(Roles = Permisos.Todos)]
+        [HttpPost]
+        [Route("api/Usuario/Contrasena")]
+        public IHttpActionResult CambiarContrasena([FromBody] CambioContrasena value)
+        {
+            if (value == null || string.IsNullOrEmpty(value.Nueva) || value.Nueva.Length < 6)
+                return BadRequest("La contraseña nueva debe tener al menos 6 caracteres");
+            int yo = Permisos.IdUsuario(User);
+            Usuario oUsuario = new Usuario();
+            if (!oUsuario.VerificarContrasena(yo, value.Actual))
+                return BadRequest("La contraseña actual es incorrecta");
+            oUsuario.ActualizarContrasena(yo, Contrasenas.Hashear(value.Nueva));
+            return Ok();
+        }
+
         [Rol(Roles = Permisos.Admin)]
         public void Delete(int id)
         {

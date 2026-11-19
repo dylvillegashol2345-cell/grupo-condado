@@ -2494,16 +2494,6 @@ CREATE PROCEDURE SP_Usuario_GetId @IdUsuario INT AS
 BEGIN SELECT u.IdUsuario,u.NombreUsuario,u.Nombre,u.Email,u.Telefono,r.Nombre AS Rol,u.IdRol FROM Usuario u INNER JOIN Rol r ON u.IdRol=r.IdRol WHERE u.IdUsuario=@IdUsuario; END;
 GO
 
-CREATE PROCEDURE SP_Usuario_Insert
-    @NombreUsuario NVARCHAR(100)=NULL,@Nombre NVARCHAR(100),@Email NVARCHAR(100),
-    @Telefono NVARCHAR(20)=NULL,@Contrasena NVARCHAR(100),@IdRol INT
-AS BEGIN
-    IF EXISTS(SELECT 1 FROM Usuario WHERE Email=@Email) BEGIN RAISERROR('EMAIL_DUPLICADO',16,1); RETURN; END
-    INSERT INTO Usuario(NombreUsuario,Nombre,Email,Telefono,Contrasena,IdRol)
-    VALUES(ISNULL(@NombreUsuario,@Nombre),@Nombre,@Email,@Telefono,
-           CONVERT(NVARCHAR(256),HASHBYTES('SHA2_256',CAST(@Contrasena AS NVARCHAR(100))),2),@IdRol);
-END;
-GO
 
 CREATE PROCEDURE SP_Usuario_Login @Nombre NVARCHAR(100),@Contrasena NVARCHAR(100) AS
 BEGIN
@@ -2515,18 +2505,6 @@ BEGIN
 END;
 GO
 
-CREATE PROCEDURE SP_Usuario_Update
-    @IdUsuario INT,@Nombre NVARCHAR(100),@Email NVARCHAR(100),
-    @Contrasena NVARCHAR(256)=NULL,@IdRol INT
-AS BEGIN
-    IF @Contrasena IS NULL OR @Contrasena='' OR @Contrasena='___NOCHANGE___'
-        UPDATE Usuario SET Nombre=@Nombre,Email=@Email,IdRol=@IdRol WHERE IdUsuario=@IdUsuario;
-    ELSE
-        UPDATE Usuario SET Nombre=@Nombre,Email=@Email,IdRol=@IdRol,
-            Contrasena=CONVERT(NVARCHAR(256),HASHBYTES('SHA2_256',CAST(@Contrasena AS NVARCHAR(100))),2)
-        WHERE IdUsuario=@IdUsuario;
-END;
-GO
 
 -- ============================================================
 -- CORRECCIÓN DE DATOS DE PRUEBA (2026-10-30)
@@ -2804,6 +2782,50 @@ BEGIN
     WHERE (ISNULL(u.Email, '') <> '' AND LOWER(LTRIM(RTRIM(c.Email))) = LOWER(LTRIM(RTRIM(u.Email))))
        OR (ISNULL(u.NombreUsuario, '') <> '' AND c.Email LIKE u.NombreUsuario + '%')
     ORDER BY CASE WHEN LOWER(LTRIM(RTRIM(c.Email))) = LOWER(LTRIM(RTRIM(u.Email))) THEN 0 ELSE 1 END, c.IdCliente;
+END;
+GO
+
+/* ----------------------------------------------------------
+   CORRECCIONES v1.0 - Tarea 2: contraseñas con PBKDF2 y sal
+   El hash lo calcula la API (texto PBKDF2$iteraciones$sal$hash); la base lo guarda tal cual.
+   SP_Usuario_Login (SHA-256 en SQL) queda solo para validar y migrar las contraseñas viejas.
+   ---------------------------------------------------------- */
+CREATE OR ALTER PROCEDURE SP_Usuario_Insert
+    @NombreUsuario NVARCHAR(100)=NULL,@Nombre NVARCHAR(100),@Email NVARCHAR(100),
+    @Telefono NVARCHAR(20)=NULL,@Contrasena NVARCHAR(256),@IdRol INT
+AS BEGIN
+    IF EXISTS(SELECT 1 FROM Usuario WHERE Email=@Email) BEGIN RAISERROR('EMAIL_DUPLICADO',16,1); RETURN; END
+    INSERT INTO Usuario(NombreUsuario,Nombre,Email,Telefono,Contrasena,IdRol)
+    VALUES(ISNULL(@NombreUsuario,@Nombre),@Nombre,@Email,@Telefono,@Contrasena,@IdRol);
+END;
+GO
+
+CREATE OR ALTER PROCEDURE SP_Usuario_Update
+    @IdUsuario INT,@Nombre NVARCHAR(100),@Email NVARCHAR(100),
+    @Contrasena NVARCHAR(256)=NULL,@IdRol INT
+AS BEGIN
+    IF @Contrasena IS NULL OR @Contrasena='' OR @Contrasena='___NOCHANGE___'
+        UPDATE Usuario SET Nombre=@Nombre,Email=@Email,IdRol=@IdRol WHERE IdUsuario=@IdUsuario;
+    ELSE
+        UPDATE Usuario SET Nombre=@Nombre,Email=@Email,IdRol=@IdRol,Contrasena=@Contrasena WHERE IdUsuario=@IdUsuario;
+END;
+GO
+
+-- Candidatos para ingresar: por nombre de usuario o nombre, o por id (cambio de contraseña)
+CREATE OR ALTER PROCEDURE SP_Usuario_GetLogin @Nombre NVARCHAR(100)=NULL,@IdUsuario INT=NULL AS
+BEGIN
+    SET NOCOUNT ON;
+    SELECT u.IdUsuario,u.NombreUsuario,u.Nombre,u.Email,r.Nombre AS Rol,u.Contrasena
+    FROM Usuario u INNER JOIN Rol r ON u.IdRol=r.IdRol
+    WHERE (@IdUsuario IS NOT NULL AND u.IdUsuario=@IdUsuario)
+       OR (@IdUsuario IS NULL AND (u.Nombre=@Nombre OR u.NombreUsuario=@Nombre));
+END;
+GO
+
+CREATE OR ALTER PROCEDURE SP_Usuario_UpdateContrasena @IdUsuario INT,@Contrasena NVARCHAR(256) AS
+BEGIN
+    SET NOCOUNT ON;
+    UPDATE Usuario SET Contrasena=@Contrasena WHERE IdUsuario=@IdUsuario;
 END;
 GO
 

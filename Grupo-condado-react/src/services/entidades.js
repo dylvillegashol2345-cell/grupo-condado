@@ -23,6 +23,11 @@ export async function login(nombre, contrasena, captchaToken) {
   return filas.length ? filas[0] : null;
 }
 
+// La API verifica la contraseña actual y calcula el hash de la nueva
+export function cambiarContrasena(actual, nueva) {
+  return api.post("/Usuario/Contrasena", { Actual: actual, Nueva: nueva });
+}
+
 export function logout() {
   return api.post("/Login/Logout");
 }

@@ -53,7 +53,7 @@ namespace WebApi.Controllers
             if (!CaptchaValido(value.CaptchaToken)) return vacio;
 
             Usuario oUsuario = new Usuario();
-            DataTable t = oUsuario.Login(value.Nombre, value.Contrasena);
+            DataTable t = oUsuario.Ingresar(value.Nombre, value.Contrasena);
             if (t.Rows.Count == 0) return t;
 
             // Token de 8 horas que el navegador manda en cada solicitud

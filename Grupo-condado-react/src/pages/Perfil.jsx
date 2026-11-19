@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { usuarios, login as loginApi } from "../services/entidades";
+import { usuarios, cambiarContrasena } from "../services/entidades";
 import { useAuth } from "../context/authContext";
 import { useUI } from "../context/uiContext";
 import { EMAIL_LIBRE } from "../utils/validaciones";
@@ -76,26 +76,14 @@ function Perfil() {
 
     setGuardandoPass(true);
     try {
-      const ok = await loginApi(usuario.Nombre, passActual);
-      if (!ok) {
-        toast("La contraseña actual es incorrecta", "error");
-        return;
-      }
-
-      await usuarios.actualizar(usuario.IdUsuario, {
-        IdUsuario: usuario.IdUsuario,
-        Nombre: usuario.Nombre,
-        Email: usuario.Email,
-        Contrasena: passNueva,
-        IdRol: idRol,
-      });
+      await cambiarContrasena(passActual, passNueva);
 
       setPassActual("");
       setPassNueva("");
       setPassConfirm("");
       toast("🔒 Contraseña actualizada correctamente", "ok");
-    } catch {
-      toast("Error al cambiar la contraseña", "error");
+    } catch (err) {
+      toast(err.status === 400 ? "La contraseña actual es incorrecta" : "Error al cambiar la contraseña", "error");
     } finally {
       setGuardandoPass(false);
     }
