@@ -2077,26 +2077,11 @@ CREATE PROCEDURE SP_Consulta_GetAll AS BEGIN SELECT * FROM Consulta ORDER BY Fec
 GO
 
 
-CREATE PROCEDURE SP_Contrato_Delete @IdContrato INT AS BEGIN DELETE FROM Contrato WHERE IdContrato=@IdContrato; END;
-GO
 
 -- 4. Lectura: traer de qué cliente es cada contrato --------------------
 -- Contrato no tiene IdCliente; cuelga de Operacion. Devolverlo acá evita que
 -- el front pida /Operacion solo para saber a quién mostrarle cada contrato.
-CREATE PROCEDURE SP_Contrato_GetAll AS
-BEGIN
-    SELECT c.*, o.IdCliente
-    FROM Contrato c LEFT JOIN Operacion o ON o.IdOperacion = c.IdOperacion;
-END;
-GO
 
-CREATE PROCEDURE SP_Contrato_GetId @IdContrato INT AS
-BEGIN
-    SELECT c.*, o.IdCliente
-    FROM Contrato c LEFT JOIN Operacion o ON o.IdOperacion = c.IdOperacion
-    WHERE c.IdContrato=@IdContrato;
-END;
-GO
 
 -- 2. SP_Contrato_Insert --------------------------------------------------
 
@@ -2221,34 +2206,22 @@ CREATE PROCEDURE SP_EcoMarketMensaje_MarcarLeido @IdContacto INT,@IdUsuario INT 
 BEGIN UPDATE EcoMarketMensaje SET Leido=1 WHERE IdContacto=@IdContacto AND IdUsuario!=@IdUsuario AND Leido=0; END;
 GO
 
-CREATE PROCEDURE SP_Operacion_Delete @IdOperacion INT AS BEGIN DELETE FROM Operacion WHERE IdOperacion=@IdOperacion; END;
-GO
 
 -- ============================================================
 -- SPs  OPERACION
 -- ============================================================
-CREATE PROCEDURE SP_Operacion_GetAll AS BEGIN SELECT * FROM Operacion; END;
-GO
 
-CREATE PROCEDURE SP_Operacion_GetId @IdOperacion INT AS BEGIN SELECT * FROM Operacion WHERE IdOperacion=@IdOperacion; END;
-GO
 
 
 CREATE PROCEDURE SP_Operacion_Update @IdOperacion INT,@Tipo NVARCHAR(100),@Fecha DATE,@IdCliente INT,@IdPropiedad INT,@IdUsuario INT AS
 BEGIN UPDATE Operacion SET Tipo=@Tipo,Fecha=@Fecha,IdCliente=@IdCliente,IdPropiedad=@IdPropiedad,IdUsuario=@IdUsuario WHERE IdOperacion=@IdOperacion; END;
 GO
 
-CREATE PROCEDURE SP_Pago_Delete @IdPago INT AS BEGIN DELETE FROM Pago WHERE IdPago=@IdPago; END;
-GO
 
 -- ============================================================
 -- SPs  PAGO (COBRO)
 -- ============================================================
-CREATE PROCEDURE SP_Pago_GetAll AS BEGIN SELECT IdPago,Monto,Fecha,IdContrato,ISNULL(Moneda,'ARS') AS Moneda FROM Pago; END;
-GO
 
-CREATE PROCEDURE SP_Pago_GetId @IdPago INT AS BEGIN SELECT * FROM Pago WHERE IdPago=@IdPago; END;
-GO
 
 CREATE PROCEDURE SP_Pago_Insert @Monto DECIMAL(18,2),@Fecha DATE,@IdContrato INT,@Moneda NVARCHAR(10)='ARS' AS
 BEGIN INSERT INTO Pago(Monto,Fecha,IdContrato,Moneda) VALUES(@Monto,@Fecha,@IdContrato,@Moneda); END;
@@ -2258,20 +2231,6 @@ CREATE PROCEDURE SP_Pago_Update @IdPago INT,@Monto DECIMAL(18,2),@Fecha DATE,@Id
 BEGIN UPDATE Pago SET Monto=@Monto,Fecha=@Fecha,IdContrato=@IdContrato,Moneda=@Moneda WHERE IdPago=@IdPago; END;
 GO
 
-CREATE PROCEDURE SP_Propiedad_Delete @IdPropiedad INT AS
-BEGIN
-    DELETE FROM PropiedadImagen WHERE IdPropiedad=@IdPropiedad;
-    DELETE FROM Pago WHERE IdContrato IN (SELECT c.IdContrato FROM Contrato c INNER JOIN Operacion o ON o.IdOperacion=c.IdOperacion WHERE o.IdPropiedad=@IdPropiedad);
-    DELETE FROM Contrato WHERE IdOperacion IN (SELECT IdOperacion FROM Operacion WHERE IdPropiedad=@IdPropiedad);
-    DELETE FROM Comision WHERE IdOperacion IN (SELECT IdOperacion FROM Operacion WHERE IdPropiedad=@IdPropiedad);
-    DELETE FROM Operacion WHERE IdPropiedad=@IdPropiedad;
-    DELETE FROM Cita WHERE IdPropiedad=@IdPropiedad;
-    DELETE FROM ImpactoAmbiental WHERE IdPropiedad=@IdPropiedad;
-    DELETE FROM Residuo WHERE IdPropiedad=@IdPropiedad;
-    DELETE FROM MejoraSustentable WHERE IdPropiedad=@IdPropiedad;
-    DELETE FROM Propiedad WHERE IdPropiedad=@IdPropiedad;
-END;
-GO
 
 -- ============================================================
 -- SPs  PROPIEDAD
@@ -3076,6 +3035,82 @@ AS BEGIN
     END
     COMMIT;
     SELECT @IdContrato AS IdContrato;
+END;
+GO
+
+/* ----------------------------------------------------------
+   CORRECCIONES v1.0 - Tarea 11: baja lógica con retención legal
+   La Resolución UIF 43/2024 obliga a conservar operaciones y datos de clientes
+   por lo menos 10 años: operaciones, contratos y cobros ya no se borran, se dan de baja.
+   Clientes y propietarios con operaciones o propiedades ya estaban protegidos por sus claves foráneas.
+   ---------------------------------------------------------- */
+IF COL_LENGTH('Operacion', 'Activo') IS NULL ALTER TABLE Operacion ADD Activo BIT NOT NULL CONSTRAINT DF_Operacion_Activo DEFAULT (1);
+IF COL_LENGTH('Contrato', 'Activo') IS NULL ALTER TABLE Contrato ADD Activo BIT NOT NULL CONSTRAINT DF_Contrato_Activo DEFAULT (1);
+IF COL_LENGTH('Pago', 'Activo') IS NULL ALTER TABLE Pago ADD Activo BIT NOT NULL CONSTRAINT DF_Pago_Activo DEFAULT (1);
+GO
+
+-- Listados: solo lo activo
+CREATE OR ALTER PROCEDURE SP_Operacion_GetAll AS BEGIN SELECT * FROM Operacion WHERE Activo = 1; END;
+GO
+CREATE OR ALTER PROCEDURE SP_Operacion_GetId @IdOperacion INT AS BEGIN SELECT * FROM Operacion WHERE IdOperacion=@IdOperacion AND Activo = 1; END;
+GO
+CREATE OR ALTER PROCEDURE SP_Contrato_GetAll AS
+BEGIN
+    SELECT c.*, o.IdCliente
+    FROM Contrato c LEFT JOIN Operacion o ON o.IdOperacion = c.IdOperacion
+    WHERE c.Activo = 1;
+END;
+GO
+CREATE OR ALTER PROCEDURE SP_Contrato_GetId @IdContrato INT AS
+BEGIN
+    SELECT c.*, o.IdCliente
+    FROM Contrato c LEFT JOIN Operacion o ON o.IdOperacion = c.IdOperacion
+    WHERE c.IdContrato=@IdContrato AND c.Activo = 1;
+END;
+GO
+CREATE OR ALTER PROCEDURE SP_Pago_GetAll AS BEGIN SELECT IdPago,Monto,Fecha,IdContrato,ISNULL(Moneda,'ARS') AS Moneda FROM Pago WHERE Activo = 1; END;
+GO
+CREATE OR ALTER PROCEDURE SP_Pago_GetId @IdPago INT AS BEGIN SELECT * FROM Pago WHERE IdPago=@IdPago AND Activo = 1; END;
+GO
+
+-- Bajas lógicas. Como antes con las claves foráneas, no se da de baja algo que tiene registros activos que dependen de él.
+CREATE OR ALTER PROCEDURE SP_Operacion_Delete @IdOperacion INT AS
+BEGIN
+    SET NOCOUNT ON;
+    IF EXISTS (SELECT 1 FROM Contrato WHERE IdOperacion = @IdOperacion AND Activo = 1)
+        THROW 50011, 'La operación tiene contratos activos: primero hay que dar de baja los contratos.', 1;
+    UPDATE Operacion SET Activo = 0 WHERE IdOperacion = @IdOperacion;
+END;
+GO
+CREATE OR ALTER PROCEDURE SP_Contrato_Delete @IdContrato INT AS
+BEGIN
+    SET NOCOUNT ON;
+    IF EXISTS (SELECT 1 FROM Pago WHERE IdContrato = @IdContrato AND Activo = 1)
+        THROW 50012, 'El contrato tiene cobros registrados: primero hay que dar de baja los cobros.', 1;
+    UPDATE Contrato SET Activo = 0 WHERE IdContrato = @IdContrato;
+END;
+GO
+CREATE OR ALTER PROCEDURE SP_Pago_Delete @IdPago INT AS
+BEGIN
+    SET NOCOUNT ON;
+    UPDATE Pago SET Activo = 0 WHERE IdPago = @IdPago;
+END;
+GO
+
+-- Una propiedad con operaciones ya no se borra: antes se llevaba en cascada sus operaciones, contratos y cobros
+CREATE OR ALTER PROCEDURE SP_Propiedad_Delete @IdPropiedad INT AS
+BEGIN
+    SET NOCOUNT ON; SET XACT_ABORT ON;
+    IF EXISTS (SELECT 1 FROM Operacion WHERE IdPropiedad = @IdPropiedad)
+        THROW 50010, 'La propiedad tiene operaciones registradas, que se conservan por la Resolución UIF 43/2024: no se puede borrar.', 1;
+    BEGIN TRAN;
+        DELETE FROM PropiedadImagen WHERE IdPropiedad=@IdPropiedad;
+        DELETE FROM Cita WHERE IdPropiedad=@IdPropiedad;
+        DELETE FROM ImpactoAmbiental WHERE IdPropiedad=@IdPropiedad;
+        DELETE FROM Residuo WHERE IdPropiedad=@IdPropiedad;
+        DELETE FROM MejoraSustentable WHERE IdPropiedad=@IdPropiedad;
+        DELETE FROM Propiedad WHERE IdPropiedad=@IdPropiedad;
+    COMMIT;
 END;
 GO
 

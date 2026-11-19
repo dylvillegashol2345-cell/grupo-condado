@@ -24,8 +24,9 @@ UNION ALL
 SELECT N'Citas del mismo agente a la misma hora', COUNT(*)
 FROM (SELECT IdUsuario, Fecha, Hora FROM Cita WHERE Estado <> 'Cancelada' GROUP BY IdUsuario, Fecha, Hora HAVING COUNT(*) > 1) d
 UNION ALL
--- Operaciones cuyo estado de propiedad no corresponde (RN5)
+-- Operaciones cuyo estado de propiedad no corresponde (RN5); las dadas de baja no cuentan
 SELECT N'Operaciones con la propiedad en un estado que no corresponde', COUNT(*)
 FROM Operacion o JOIN Propiedad p ON p.IdPropiedad = o.IdPropiedad
-WHERE (o.Tipo = 'Venta' AND p.Estado <> 'Vendida')
-   OR (o.Tipo = 'Alquiler' AND p.Estado NOT IN ('Alquilada', 'Disponible'));
+WHERE o.Activo = 1
+  AND ((o.Tipo = 'Venta' AND p.Estado <> 'Vendida')
+    OR (o.Tipo = 'Alquiler' AND p.Estado NOT IN ('Alquilada', 'Disponible')));
