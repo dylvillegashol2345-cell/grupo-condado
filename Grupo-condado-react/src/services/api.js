@@ -54,7 +54,11 @@ async function request(path, { method = "GET", body } = {}) {
   }
 
   if (!res.ok) {
-    throw new ApiError(`La API respondió ${res.status}`, res.status);
+    // Los errores controlados (400 datos inválidos, 409 propiedad no disponible) traen el motivo en "Message"
+    const motivo = await res.json().catch(() => null);
+    const texto = typeof motivo === "string" ? motivo : motivo?.Message;
+    const controlado = res.status === 400 || res.status === 409;
+    throw new ApiError(controlado && texto ? texto : `La API respondió ${res.status}`, res.status);
   }
 
   // 204 y respuestas vacías (los controllers `void`)

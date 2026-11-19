@@ -2298,16 +2298,6 @@ GO
 CREATE PROCEDURE SP_Operacion_GetId @IdOperacion INT AS BEGIN SELECT * FROM Operacion WHERE IdOperacion=@IdOperacion; END;
 GO
 
-CREATE PROCEDURE SP_Operacion_Insert @Tipo NVARCHAR(100),@Fecha DATE,@IdCliente INT,@IdPropiedad INT,@IdUsuario INT AS
-BEGIN
-    DECLARE @Estado NVARCHAR(50);
-    SELECT @Estado=Estado FROM Propiedad WHERE IdPropiedad=@IdPropiedad;
-    IF @Estado<>'Disponible' BEGIN RAISERROR('La propiedad no esta disponible',16,1); RETURN; END
-    INSERT INTO Operacion(Tipo,Fecha,IdCliente,IdPropiedad,IdUsuario) VALUES(@Tipo,@Fecha,@IdCliente,@IdPropiedad,@IdUsuario);
-    IF @Tipo='Venta'    UPDATE Propiedad SET Estado='Vendida'   WHERE IdPropiedad=@IdPropiedad;
-    IF @Tipo='Alquiler' UPDATE Propiedad SET Estado='Alquilada' WHERE IdPropiedad=@IdPropiedad;
-END;
-GO
 
 CREATE PROCEDURE SP_Operacion_Update @IdOperacion INT,@Tipo NVARCHAR(100),@Fecha DATE,@IdCliente INT,@IdPropiedad INT,@IdUsuario INT AS
 BEGIN UPDATE Operacion SET Tipo=@Tipo,Fecha=@Fecha,IdCliente=@IdCliente,IdPropiedad=@IdPropiedad,IdUsuario=@IdUsuario WHERE IdOperacion=@IdOperacion; END;
@@ -2826,6 +2816,33 @@ CREATE OR ALTER PROCEDURE SP_Usuario_UpdateContrasena @IdUsuario INT,@Contrasena
 BEGIN
     SET NOCOUNT ON;
     UPDATE Usuario SET Contrasena=@Contrasena WHERE IdUsuario=@IdUsuario;
+END;
+GO
+
+/* ----------------------------------------------------------
+   CORRECCIONES v1.0 - Tarea 4: operación y cambio de estado en una sola transacción
+   ---------------------------------------------------------- */
+CREATE OR ALTER PROCEDURE SP_Operacion_Insert @Tipo NVARCHAR(100),@Fecha DATE,@IdCliente INT,@IdPropiedad INT,@IdUsuario INT AS
+BEGIN
+    SET NOCOUNT ON; SET XACT_ABORT ON;
+    IF @Tipo NOT IN ('Venta', 'Alquiler')
+        THROW 50004, 'El tipo de operación tiene que ser Venta o Alquiler.', 1;
+    BEGIN TRAN;
+        -- RN4 y RN5. El UPDATE condicional bloquea la fila: si dos agentes registran a la vez,
+        -- el segundo espera, encuentra la propiedad ya vendida o alquilada y no actualiza nada.
+        UPDATE Propiedad
+           SET Estado = CASE @Tipo WHEN 'Venta' THEN 'Vendida' ELSE 'Alquilada' END
+         WHERE IdPropiedad = @IdPropiedad AND Estado = 'Disponible';
+        IF @@ROWCOUNT = 0
+        BEGIN
+            ROLLBACK;
+            THROW 50001, 'La propiedad ya no está disponible.', 1;
+        END
+        INSERT INTO Operacion (Tipo, Fecha, IdCliente, IdPropiedad, IdUsuario)
+        VALUES (@Tipo, @Fecha, @IdCliente, @IdPropiedad, @IdUsuario);
+        DECLARE @IdOperacion INT = SCOPE_IDENTITY();
+    COMMIT;
+    SELECT @IdOperacion AS IdOperacion;
 END;
 GO
 

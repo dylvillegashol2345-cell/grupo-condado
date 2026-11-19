@@ -179,13 +179,8 @@ function Operaciones() {
 
     setGuardando(true);
     try {
-      const respuesta = await operaciones.crear(body);
-      if (typeof respuesta === "string" && respuesta.trim().toUpperCase() !== "OK") {
-        throw new Error(respuesta);
-      }
-
+      await operaciones.crear(body);
       const nuevoEstado = estadoSegunOperacion(body.Tipo);
-      await propiedades.actualizar(body.IdPropiedad, { ...propiedad, Estado: nuevoEstado });
 
       const propTexto = opcionesPropiedad.find((o) => o.value === body.IdPropiedad)?.label || "la propiedad";
       const cliTexto = opcionesCliente.find((o) => o.value === body.IdCliente)?.label || "el cliente";
@@ -197,7 +192,8 @@ function Operaciones() {
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (err) {
       console.error(err);
-      mostrarMensaje("❌ Error al guardar operación", "seccion");
+      if (err.status === 409) recargar();
+      mostrarMensaje("❌ " + (err.status === 409 || err.status === 400 ? err.message : "Error al guardar operación"), "seccion");
     } finally {
       setGuardando(false);
     }

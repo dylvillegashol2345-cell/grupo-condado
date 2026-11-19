@@ -56,31 +56,24 @@ namespace WebApi.Models
             }
         }
 
-        public string Guardar()
+        // Registra la operación y cambia el estado de la propiedad en una sola transacción.
+        // Si la propiedad ya no está disponible, el procedimiento lanza el error 50001.
+        public int Guardar()
         {
-            try
+            string sql = "SP_Operacion_Insert";
+            using (SqlConnection cnn = new SqlConnection(connectionString))
             {
-                string sql = "SP_Operacion_Insert";
-                using (SqlConnection cnn = new SqlConnection(connectionString))
-                {
-                    SqlCommand cmd = new SqlCommand(sql, cnn);
-                    cmd.CommandType = CommandType.StoredProcedure;
+                SqlCommand cmd = new SqlCommand(sql, cnn);
+                cmd.CommandType = CommandType.StoredProcedure;
 
-                    cmd.Parameters.Add("@Tipo", SqlDbType.NVarChar).Value = Tipo;
-                    cmd.Parameters.Add("@Fecha", SqlDbType.DateTime).Value = Fecha;
-                    cmd.Parameters.Add("@IdCliente", SqlDbType.Int).Value = IdCliente;
-                    cmd.Parameters.Add("@IdPropiedad", SqlDbType.Int).Value = IdPropiedad;
-                    cmd.Parameters.Add("@IdUsuario", SqlDbType.Int).Value = IdUsuario;
+                cmd.Parameters.Add("@Tipo", SqlDbType.NVarChar).Value = Tipo;
+                cmd.Parameters.Add("@Fecha", SqlDbType.DateTime).Value = Fecha;
+                cmd.Parameters.Add("@IdCliente", SqlDbType.Int).Value = IdCliente;
+                cmd.Parameters.Add("@IdPropiedad", SqlDbType.Int).Value = IdPropiedad;
+                cmd.Parameters.Add("@IdUsuario", SqlDbType.Int).Value = IdUsuario;
 
-                    cnn.Open();
-                    cmd.ExecuteNonQuery();
-                    return "OK";
-                }
-            }
-            catch (Exception ex)
-            {
-                return ex.Message;
-
+                cnn.Open();
+                return Convert.ToInt32(cmd.ExecuteScalar());
             }
         }
 

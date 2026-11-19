@@ -169,6 +169,7 @@
     <Compile Include="Areas\HelpPage\SampleGeneration\TextSample.cs" />
     <Compile Include="Areas\HelpPage\XmlDocumentationProvider.cs" />
     <Compile Include="Seguridad\Contrasenas.cs" />
+    <Compile Include="Seguridad\ErroresSql.cs" />
     <Compile Include="Seguridad\Permisos.cs" />
     <Compile Include="Seguridad\RolAttribute.cs" />
     <Compile Include="Seguridad\TokenAuthHandler.cs" />

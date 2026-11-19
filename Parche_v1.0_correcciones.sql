@@ -112,5 +112,32 @@ BEGIN
     UPDATE Usuario SET Contrasena=@Contrasena WHERE IdUsuario=@IdUsuario;
 END;
 GO
+
+/* ----------------------------------------------------------
+   CORRECCIONES v1.0 - Tarea 4: operación y cambio de estado en una sola transacción
+   ---------------------------------------------------------- */
+CREATE OR ALTER PROCEDURE SP_Operacion_Insert @Tipo NVARCHAR(100),@Fecha DATE,@IdCliente INT,@IdPropiedad INT,@IdUsuario INT AS
+BEGIN
+    SET NOCOUNT ON; SET XACT_ABORT ON;
+    IF @Tipo NOT IN ('Venta', 'Alquiler')
+        THROW 50004, 'El tipo de operación tiene que ser Venta o Alquiler.', 1;
+    BEGIN TRAN;
+        -- RN4 y RN5. El UPDATE condicional bloquea la fila: si dos agentes registran a la vez,
+        -- el segundo espera, encuentra la propiedad ya vendida o alquilada y no actualiza nada.
+        UPDATE Propiedad
+           SET Estado = CASE @Tipo WHEN 'Venta' THEN 'Vendida' ELSE 'Alquilada' END
+         WHERE IdPropiedad = @IdPropiedad AND Estado = 'Disponible';
+        IF @@ROWCOUNT = 0
+        BEGIN
+            ROLLBACK;
+            THROW 50001, 'La propiedad ya no está disponible.', 1;
+        END
+        INSERT INTO Operacion (Tipo, Fecha, IdCliente, IdPropiedad, IdUsuario)
+        VALUES (@Tipo, @Fecha, @IdCliente, @IdPropiedad, @IdUsuario);
+        DECLARE @IdOperacion INT = SCOPE_IDENTITY();
+    COMMIT;
+    SELECT @IdOperacion AS IdOperacion;
+END;
+GO
 COMMIT;
 GO

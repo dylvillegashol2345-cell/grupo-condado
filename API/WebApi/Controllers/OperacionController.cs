@@ -39,8 +39,9 @@ namespace WebApi.Controllers
 
         // POST: api/Operacion
         [Rol(Roles = Permisos.Personal)]
-        public string Post([FromBody] Operacion value)
+        public IHttpActionResult Post([FromBody] Operacion value)
         {
+            if (value == null) return BadRequest("Faltan los datos de la operación.");
             Operacion oOperacion = new Operacion();
 
             oOperacion.Tipo = value.Tipo;
@@ -49,7 +50,11 @@ namespace WebApi.Controllers
             oOperacion.IdPropiedad = value.IdPropiedad;
             oOperacion.IdUsuario = value.IdUsuario;
 
-            return oOperacion.Guardar();
+            try
+            {
+                return Ok(new { IdOperacion = oOperacion.Guardar() });
+            }
+            catch (Exception ex) { return ErroresSql.Respuesta(this, ex); }
         }
 
         // PUT: api/Operacion/5
