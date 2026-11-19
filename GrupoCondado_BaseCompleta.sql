@@ -3115,6 +3115,20 @@ END;
 GO
 
 /* ----------------------------------------------------------
+   CORRECCIONES v1.0 - Tarea 9: versión de la base
+   ---------------------------------------------------------- */
+IF OBJECT_ID(N'dbo.VersionBase', N'U') IS NULL
+CREATE TABLE [VersionBase] (
+    [Version] NVARCHAR(20) NOT NULL,
+    [Fecha] DATETIME2 NOT NULL CONSTRAINT [DF_VersionBase_Fecha] DEFAULT (SYSDATETIME()),
+    CONSTRAINT [PK_VersionBase] PRIMARY KEY ([Version])
+);
+GO
+IF NOT EXISTS (SELECT 1 FROM VersionBase WHERE Version = N'1.0')
+    INSERT INTO VersionBase (Version) VALUES (N'1.0');
+GO
+
+/* ----------------------------------------------------------
    5. CONTROL: filas cargadas en cada tabla
    ---------------------------------------------------------- */
 SELECT N'Cliente' AS Tabla, COUNT(*) AS Filas FROM [Cliente]
@@ -3138,6 +3152,10 @@ UNION ALL SELECT N'EcoMarketContacto' AS Tabla, COUNT(*) AS Filas FROM [EcoMarke
 UNION ALL SELECT N'ContratoDocumento' AS Tabla, COUNT(*) AS Filas FROM [ContratoDocumento]
 UNION ALL SELECT N'EcoMarketMensaje' AS Tabla, COUNT(*) AS Filas FROM [EcoMarketMensaje]
 UNION ALL SELECT N'Pago' AS Tabla, COUNT(*) AS Filas FROM [Pago]
+UNION ALL SELECT N'Sesion' AS Tabla, COUNT(*) AS Filas FROM [Sesion]
+UNION ALL SELECT N'Parametro' AS Tabla, COUNT(*) AS Filas FROM [Parametro]
+UNION ALL SELECT N'ParametroHistorial' AS Tabla, COUNT(*) AS Filas FROM [ParametroHistorial]
+UNION ALL SELECT N'VersionBase' AS Tabla, COUNT(*) AS Filas FROM [VersionBase]
 ORDER BY Tabla;
 GO
 

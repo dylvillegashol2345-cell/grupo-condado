@@ -561,5 +561,19 @@ BEGIN
     COMMIT;
 END;
 GO
+
+/* ----------------------------------------------------------
+   CORRECCIONES v1.0 - Tarea 9: versión de la base
+   ---------------------------------------------------------- */
+IF OBJECT_ID(N'dbo.VersionBase', N'U') IS NULL
+CREATE TABLE [VersionBase] (
+    [Version] NVARCHAR(20) NOT NULL,
+    [Fecha] DATETIME2 NOT NULL CONSTRAINT [DF_VersionBase_Fecha] DEFAULT (SYSDATETIME()),
+    CONSTRAINT [PK_VersionBase] PRIMARY KEY ([Version])
+);
+GO
+IF NOT EXISTS (SELECT 1 FROM VersionBase WHERE Version = N'1.0')
+    INSERT INTO VersionBase (Version) VALUES (N'1.0');
+GO
 COMMIT;
 GO
