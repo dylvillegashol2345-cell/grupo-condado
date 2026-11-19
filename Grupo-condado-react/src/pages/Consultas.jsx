@@ -74,7 +74,7 @@ function Consultas() {
     if (error) {
       return (
         <p className="text-danger" style={{ padding: "1rem" }}>
-          Error al cargar consultas. Verificá que la API esté corriendo.
+          No se pudieron cargar las consultas. Revisá tu conexión y volvé a intentarlo.
         </p>
       );
     }

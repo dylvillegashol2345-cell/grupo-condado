@@ -1,5 +1,5 @@
 import { Fragment, useEffect, useMemo, useState } from "react";
-import { NavLink, Outlet, useNavigate } from "react-router-dom";
+import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import Notificaciones from "./Notificaciones";
 import BusquedaGlobal from "./BusquedaGlobal";
 import Chatbot from "./Chatbot";
@@ -8,6 +8,7 @@ import Logo from "./Logo";
 import ToastStack from "../common/ToastStack";
 import ConfirmDialog from "../common/ConfirmDialog";
 import Splash from "../common/Splash";
+import ErrorBoundary from "../common/ErrorBoundary";
 import { useAuth } from "../../context/authContext";
 import { useTheme } from "../../context/themeContext";
 import { useActividad } from "../../context/actividadContext";
@@ -39,6 +40,7 @@ function MainLayout() {
   const { oscuro, alternar } = useTheme();
   const { limpiar: limpiarActividad } = useActividad();
   const navigate = useNavigate();
+  const { pathname } = useLocation();
   const [colapsado, setColapsado] = useState(false);
   const [confirmarSalida, setConfirmarSalida] = useState(false);
   const [saliendo, setSaliendo] = useState(false);
@@ -149,7 +151,10 @@ function MainLayout() {
       </aside>
 
       <main className={`main${colapsado ? " shifted" : ""}`} id="mainContent">
-        <Outlet />
+        {/* La clave reinicia el aviso de error al cambiar de pantalla */}
+        <ErrorBoundary key={pathname}>
+          <Outlet />
+        </ErrorBoundary>
         <Footer secciones={items} />
       </main>
 

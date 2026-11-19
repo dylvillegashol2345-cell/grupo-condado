@@ -5,6 +5,7 @@ import { metricasAmbientales, fraseImpacto } from "../utils/ambiental";
 import { normalizarImagen } from "../utils/imagenes";
 import { direccion } from "../utils/format";
 import Grafico from "../components/dashboard/Grafico";
+import ErrorBanner from "../components/common/ErrorBanner";
 
 const OPCIONES_DONA = {
   plugins: {
@@ -40,7 +41,7 @@ function Kpi({ color, icono, etiqueta, valor, sub, idValor }) {
 }
 
 function Ambiental() {
-  const { datos, recargar } = useCarga(
+  const { datos, error, recargar } = useCarga(
     async () => {
       const [props, items] = await Promise.all([propiedades.listar(), ecoItems.listar()]);
       return { props, items };
@@ -61,6 +62,8 @@ function Ambiental() {
           <i className="fa fa-sync me-1" />Actualizar
         </button>
       </div>
+
+      <ErrorBanner mensaje={error} onReintentar={recargar} />
 
       <div className="row g-3 mb-4" id="ambientalKpis">
         <Kpi color="#2e7d32" icono="fa-recycle" etiqueta="Artículos donados" idValor="kpiDonados"

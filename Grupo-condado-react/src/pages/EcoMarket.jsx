@@ -126,7 +126,7 @@ function EcoMarket() {
         {cargando ? (
           <SkeletonEco />
         ) : error ? (
-          <p className="text-danger">Error al cargar EcoMarket. Verificá que la API esté corriendo.</p>
+          <p className="text-danger">No se pudo cargar EcoMarket. Revisá tu conexión y volvé a intentarlo.</p>
         ) : filtrada.length === 0 ? (
           <div className="col-12">
             <EmptyState

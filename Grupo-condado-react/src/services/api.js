@@ -11,9 +11,8 @@ export class ApiError extends Error {
   }
 }
 
-const MSG_SIN_API =
-  "No se pudo conectar con la API. Verificá que el proyecto WebApi esté corriendo en " +
-  (API_URL.replace(/\/api$/, "") || "localhost:56153") + ".";
+const MSG_SIN_API = "No hay conexión con el servidor. Revisá tu conexión y volvé a intentarlo.";
+const MSG_SERVIDOR = "El servidor no pudo completar la operación. Volvé a intentarlo en unos minutos.";
 
 // La sesión que guarda AuthProvider trae el token que devolvió /api/Login
 function sesionGuardada() {
@@ -58,7 +57,8 @@ async function request(path, { method = "GET", body } = {}) {
     const motivo = await res.json().catch(() => null);
     const texto = typeof motivo === "string" ? motivo : motivo?.Message;
     const controlado = res.status === 400 || res.status === 409;
-    throw new ApiError(controlado && texto ? texto : `La API respondió ${res.status}`, res.status);
+    const generico = res.status === 404 ? "No se encontró lo que buscabas." : MSG_SERVIDOR;
+    throw new ApiError(controlado && texto ? texto : generico, res.status);
   }
 
   // 204 y respuestas vacías (los controllers `void`)
