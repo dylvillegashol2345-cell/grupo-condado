@@ -2347,51 +2347,7 @@ CREATE PROCEDURE SP_Propiedad_GetId @IdPropiedad INT AS
 BEGIN SELECT * FROM Propiedad WHERE IdPropiedad=@IdPropiedad; END;
 GO
 
-CREATE PROCEDURE SP_Propiedad_Insert
-    @IdPropietario INT,@Barrio NVARCHAR(100),@Calle NVARCHAR(100),
-    @Numeracion NVARCHAR(100),@Piso NVARCHAR(10)=NULL,@NroDepto NVARCHAR(10)=NULL,
-    @IdTipo INT,@IdLocalidad INT,@Precio DECIMAL(18,2),@Superficie DECIMAL(10,2),
-    @Descripcion NVARCHAR(1000),@Estado NVARCHAR(50),@PanelesSolares BIT,
-    @AislamientoTermico BIT,@CategoriaEco NVARCHAR(50),@Bonificacion DECIMAL(10,2),
-    @MatriculaVerificada BIT,@TituloPropiedad BIT,
-    @ArchivoMatricula NVARCHAR(MAX)=NULL,@ArchivoTitulo NVARCHAR(MAX)=NULL,
-    @Publicada BIT,@Imagen NVARCHAR(MAX)=NULL,@Servicios NVARCHAR(200)=NULL,@Moneda NVARCHAR(10)='ARS',
-    @Tour360 NVARCHAR(MAX)=NULL
-AS BEGIN
-    INSERT INTO Propiedad(IdPropietario,Barrio,Calle,Numeracion,Piso,NroDepto,IdTipo,IdLocalidad,
-        Precio,Superficie,Descripcion,Estado,PanelesSolares,AislamientoTermico,
-        CategoriaEco,Bonificacion,MatriculaVerificada,TituloPropiedad,
-        ArchivoMatricula,ArchivoTitulo,Publicada,Imagen,Servicios,Moneda,Tour360)
-    VALUES(@IdPropietario,@Barrio,@Calle,@Numeracion,@Piso,@NroDepto,@IdTipo,@IdLocalidad,
-        @Precio,@Superficie,@Descripcion,@Estado,@PanelesSolares,@AislamientoTermico,
-        @CategoriaEco,@Bonificacion,@MatriculaVerificada,@TituloPropiedad,
-        @ArchivoMatricula,@ArchivoTitulo,@Publicada,@Imagen,@Servicios,@Moneda,@Tour360);
-    SELECT SCOPE_IDENTITY() AS IdPropiedad;
-END;
-GO
 
-CREATE PROCEDURE SP_Propiedad_Update
-    @IdPropiedad INT,@IdPropietario INT,@Barrio NVARCHAR(100),@Calle NVARCHAR(100),
-    @Numeracion NVARCHAR(100),@Piso NVARCHAR(10)=NULL,@NroDepto NVARCHAR(10)=NULL,
-    @IdTipo INT,@IdLocalidad INT,@Precio DECIMAL(18,2),@Superficie DECIMAL(10,2),
-    @Descripcion NVARCHAR(1000),@Estado NVARCHAR(50),@PanelesSolares BIT,
-    @AislamientoTermico BIT,@CategoriaEco NVARCHAR(50),@Bonificacion DECIMAL(10,2),
-    @MatriculaVerificada BIT,@TituloPropiedad BIT,
-    @ArchivoMatricula NVARCHAR(MAX)=NULL,@ArchivoTitulo NVARCHAR(MAX)=NULL,
-    @Publicada BIT,@Imagen NVARCHAR(MAX)=NULL,@Servicios NVARCHAR(200)=NULL,@Moneda NVARCHAR(10)='ARS',
-    @Tour360 NVARCHAR(MAX)=NULL
-AS BEGIN
-    UPDATE Propiedad SET IdPropietario=@IdPropietario,Barrio=@Barrio,Calle=@Calle,
-        Numeracion=@Numeracion,Piso=@Piso,NroDepto=@NroDepto,IdTipo=@IdTipo,
-        IdLocalidad=@IdLocalidad,Precio=@Precio,Superficie=@Superficie,
-        Descripcion=@Descripcion,Estado=@Estado,PanelesSolares=@PanelesSolares,
-        AislamientoTermico=@AislamientoTermico,CategoriaEco=@CategoriaEco,
-        Bonificacion=@Bonificacion,MatriculaVerificada=@MatriculaVerificada,
-        TituloPropiedad=@TituloPropiedad,ArchivoMatricula=@ArchivoMatricula,
-        ArchivoTitulo=@ArchivoTitulo,Publicada=@Publicada,Imagen=@Imagen,Servicios=@Servicios,Moneda=@Moneda,Tour360=@Tour360
-    WHERE IdPropiedad=@IdPropiedad;
-END;
-GO
 
 CREATE PROCEDURE SP_PropiedadImagen_Delete @IdImagen INT AS
 BEGIN DELETE FROM PropiedadImagen WHERE IdImagen=@IdImagen; END;
@@ -2842,6 +2798,64 @@ BEGIN
     COMMIT;
     SELECT @IdOperacion AS IdOperacion;
 END;
+GO
+
+/* ----------------------------------------------------------
+   CORRECCIONES v1.0 - Tarea 3: RN3, no se publica sin matrícula y título
+   ---------------------------------------------------------- */
+CREATE OR ALTER PROCEDURE SP_Propiedad_Insert
+    @IdPropietario INT,@Barrio NVARCHAR(100),@Calle NVARCHAR(100),
+    @Numeracion NVARCHAR(100),@Piso NVARCHAR(10)=NULL,@NroDepto NVARCHAR(10)=NULL,
+    @IdTipo INT,@IdLocalidad INT,@Precio DECIMAL(18,2),@Superficie DECIMAL(10,2),
+    @Descripcion NVARCHAR(1000),@Estado NVARCHAR(50),@PanelesSolares BIT,
+    @AislamientoTermico BIT,@CategoriaEco NVARCHAR(50),@Bonificacion DECIMAL(10,2),
+    @MatriculaVerificada BIT,@TituloPropiedad BIT,
+    @ArchivoMatricula NVARCHAR(MAX)=NULL,@ArchivoTitulo NVARCHAR(MAX)=NULL,
+    @Publicada BIT,@Imagen NVARCHAR(MAX)=NULL,@Servicios NVARCHAR(200)=NULL,@Moneda NVARCHAR(10)='ARS',
+    @Tour360 NVARCHAR(MAX)=NULL
+AS BEGIN
+    IF @Publicada = 1 AND (ISNULL(@MatriculaVerificada, 0) = 0 OR ISNULL(@TituloPropiedad, 0) = 0)
+        THROW 50002, 'No se puede publicar la propiedad sin matrícula y título.', 1;
+    INSERT INTO Propiedad(IdPropietario,Barrio,Calle,Numeracion,Piso,NroDepto,IdTipo,IdLocalidad,
+        Precio,Superficie,Descripcion,Estado,PanelesSolares,AislamientoTermico,
+        CategoriaEco,Bonificacion,MatriculaVerificada,TituloPropiedad,
+        ArchivoMatricula,ArchivoTitulo,Publicada,Imagen,Servicios,Moneda,Tour360)
+    VALUES(@IdPropietario,@Barrio,@Calle,@Numeracion,@Piso,@NroDepto,@IdTipo,@IdLocalidad,
+        @Precio,@Superficie,@Descripcion,@Estado,@PanelesSolares,@AislamientoTermico,
+        @CategoriaEco,@Bonificacion,@MatriculaVerificada,@TituloPropiedad,
+        @ArchivoMatricula,@ArchivoTitulo,@Publicada,@Imagen,@Servicios,@Moneda,@Tour360);
+    SELECT SCOPE_IDENTITY() AS IdPropiedad;
+END;
+GO
+
+CREATE OR ALTER PROCEDURE SP_Propiedad_Update
+    @IdPropiedad INT,@IdPropietario INT,@Barrio NVARCHAR(100),@Calle NVARCHAR(100),
+    @Numeracion NVARCHAR(100),@Piso NVARCHAR(10)=NULL,@NroDepto NVARCHAR(10)=NULL,
+    @IdTipo INT,@IdLocalidad INT,@Precio DECIMAL(18,2),@Superficie DECIMAL(10,2),
+    @Descripcion NVARCHAR(1000),@Estado NVARCHAR(50),@PanelesSolares BIT,
+    @AislamientoTermico BIT,@CategoriaEco NVARCHAR(50),@Bonificacion DECIMAL(10,2),
+    @MatriculaVerificada BIT,@TituloPropiedad BIT,
+    @ArchivoMatricula NVARCHAR(MAX)=NULL,@ArchivoTitulo NVARCHAR(MAX)=NULL,
+    @Publicada BIT,@Imagen NVARCHAR(MAX)=NULL,@Servicios NVARCHAR(200)=NULL,@Moneda NVARCHAR(10)='ARS',
+    @Tour360 NVARCHAR(MAX)=NULL
+AS BEGIN
+    IF @Publicada = 1 AND (ISNULL(@MatriculaVerificada, 0) = 0 OR ISNULL(@TituloPropiedad, 0) = 0)
+        THROW 50002, 'No se puede publicar la propiedad sin matrícula y título.', 1;
+    UPDATE Propiedad SET IdPropietario=@IdPropietario,Barrio=@Barrio,Calle=@Calle,
+        Numeracion=@Numeracion,Piso=@Piso,NroDepto=@NroDepto,IdTipo=@IdTipo,
+        IdLocalidad=@IdLocalidad,Precio=@Precio,Superficie=@Superficie,
+        Descripcion=@Descripcion,Estado=@Estado,PanelesSolares=@PanelesSolares,
+        AislamientoTermico=@AislamientoTermico,CategoriaEco=@CategoriaEco,
+        Bonificacion=@Bonificacion,MatriculaVerificada=@MatriculaVerificada,
+        TituloPropiedad=@TituloPropiedad,ArchivoMatricula=@ArchivoMatricula,
+        ArchivoTitulo=@ArchivoTitulo,Publicada=@Publicada,Imagen=@Imagen,Servicios=@Servicios,Moneda=@Moneda,Tour360=@Tour360
+    WHERE IdPropiedad=@IdPropiedad;
+END;
+GO
+
+-- Datos existentes: las publicadas sin documentación pasan a no publicadas
+UPDATE Propiedad SET Publicada = 0
+WHERE Publicada = 1 AND (ISNULL(MatriculaVerificada, 0) = 0 OR ISNULL(TituloPropiedad, 0) = 0);
 GO
 
 /* ----------------------------------------------------------

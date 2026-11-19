@@ -178,7 +178,7 @@ function PropiedadModal({ propiedad, onCerrar, onGuardado }) {
     setArchivos(nuevos);
     setDocsTocados(true);
     if (nuevos.matricula && nuevos.titulo) toast("✅ Documentación completa — propiedad publicable", "ok");
-    else setMensaje("⚠ Cargá matrícula y título para poder publicar");
+    else setMensaje("⚠ Para publicar, adjuntá la matrícula y el título.");
   }
 
   function toggleServicio(clave) {
@@ -576,7 +576,7 @@ function PropiedadModal({ propiedad, onCerrar, onGuardado }) {
           <div className={`aviso ${docsCompletos ? "aviso-ok" : "aviso-warn"}`}>
             {docsCompletos
               ? "✅ Documentación completa — propiedad publicable."
-              : "⚠ Cargá matrícula y título para poder publicar."}
+              : "⚠ Para publicar, adjuntá la matrícula y el título."}
           </div>
         </div>
 
