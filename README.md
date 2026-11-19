@@ -57,7 +57,12 @@ Tienen que estar corriendo las tres partes: base de datos, API y frontend.
 Abrir `GrupoCondado_BaseCompleta.sql` en SQL Server Management Studio y ejecutarlo (F5). Crea la
 base `GestionPropiedadesCondado` con todas las tablas, los procedimientos y los datos.
 
-Ojo: si ya existe una base con ese nombre, el script la borra y la crea de nuevo.
+Si la base ya existe, el script se detiene sin tocar nada. Para actualizar una base que ya existe
+a la versión 1.0 se ejecuta `Parche_v1.0_correcciones.sql`: se puede correr más de una vez y deja
+la fila `1.0` en la tabla `VersionBase`. Antes conviene hacer una copia de seguridad.
+
+Desde `sqlcmd` hay que agregar `-I` (`QUOTED_IDENTIFIER ON`, que exige el índice filtrado de
+citas); SQL Server Management Studio ya la usa por defecto.
 
 ### 2. API
 
@@ -97,6 +102,8 @@ El script de la base crea una cuenta de cada rol, para poder probar los permisos
 | Agente | `martin` | `martin123` |
 | Cliente | `cliente` | `cliente123` |
 
+El usuario `juan.garcia` (contraseña `juan123`) es un Cliente con contratos y cobros cargados.
+
 Sin cuenta se puede entrar con **Entrar como invitado**, que solo ve el catálogo. Desde
 **Crear cuenta** cualquiera se registra, y esas cuentas quedan siempre con rol Cliente; para
 darle otro rol, un administrador lo hace desde Usuarios.
@@ -130,15 +137,30 @@ darle otro rol, un administrador lo hace desde Usuarios.
 
 Si alguien escribe a mano la dirección de una sección que no le corresponde, lo manda a su inicio.
 
+Los permisos también los valida la API: el ingreso entrega un token de 8 horas (en la base se guarda
+solo su SHA-256) y cada solicitud lo manda en `Authorization: Bearer`. Sin sesión la API responde
+401, y con un rol sin permiso, 403. Son públicos solo el ingreso, el registro, el catálogo publicado y
+el alta de consultas, que usa la app móvil. El Cliente recibe únicamente sus propios contratos, cobros
+y operaciones. Las contraseñas se guardan con PBKDF2-SHA256 (600.000 iteraciones y sal); las viejas
+se migran en el próximo ingreso.
+
 ## Reglas de negocio
 
-Están en `Grupo-condado-react/src/utils/reglas.js`:
+Están en `Grupo-condado-react/src/utils/reglas.js`, y las que modifican datos también se validan en
+los procedimientos almacenados:
 
 - RN1: la clase energética sale de paneles solares y aislamiento (los dos: A, uno: B, ninguno: C).
 - RN2: las propiedades clase A tienen 15% de bonificación.
 - RN3: una propiedad se publica solo si tiene matrícula y título; si falta alguno, queda guardada sin publicar.
 - RN4: no se puede registrar una operación sobre una propiedad que no está disponible.
-- RN5: al registrar la operación, la propiedad pasa a Vendida o Alquilada.
+- RN5: al registrar la operación, la propiedad pasa a Vendida o Alquilada, en la misma transacción.
+- RN8: hasta 3 consultas por día (se cuentan por teléfono).
+- RN9: no se agendan citas en fechas pasadas, y una visita ocupa al agente una hora.
+
+Las comisiones salen de parámetros que cambia el Administrador desde **Mi perfil → Porcentajes de
+comisión**: venta 3% a cargo del comprador y 2% del vendedor, y alquiler 3% del total del contrato.
+Cada comisión guarda el porcentaje con el que se calculó. Operaciones, contratos y cobros no se borran:
+se dan de baja (Resolución UIF 43/2024).
 
 ## Chequeos
 
@@ -149,9 +171,24 @@ Se corren así:
 node src/utils/citas.check.mjs
 ```
 
+En `pruebas/` están las pruebas contra la API y la base (PowerShell). Necesitan el reCAPTCHA
+desactivado en el entorno de prueba (`RecaptchaSecret` vacío en `secrets.config`):
+
+| Archivo | Qué prueba |
+|---|---|
+| `permisos.ps1` | 401 y 403, datos propios del Cliente, registro sin elegir rol (CP-25, CP-26, CP-27) |
+| `contrasenas.ps1` | PBKDF2 con sal y migración de las contraseñas viejas (CP-11, CP-28) |
+| `rn3.ps1` | No se publica sin matrícula y título (CP-01) |
+| `operaciones.ps1` | Transacción de la operación y dos agentes a la vez (CP-15, CP-29, CP-30, CP-35) |
+| `reglas.ps1` | RN8 y RN9 llamando a la API directamente (CP-06, CP-07, CP-13) |
+| `comisiones.ps1` | Comisiones parametrizadas (CP-24) |
+| `baja-logica.ps1` | Bajas lógicas de operaciones, contratos y cobros |
+| `actualizacion.ps1` | El parche sobre una copia restaurada de un respaldo (CP-34) |
+| `consistencia.sql` | Consultas de integridad: todas tienen que dar 0 |
+
 ## Notas
 
-- Bootstrap, Font Awesome, Chart.js, Leaflet y Pannellum se cargan por CDN, así que los gráficos,
-  los mapas y el recorrido 360 necesitan internet.
+- Bootstrap y Font Awesome van dentro del paquete del frontend. Chart.js, Leaflet y Pannellum se
+  cargan por CDN, así que los gráficos, los mapas y el recorrido 360 necesitan internet.
 - Las fotos y los documentos se mandan a la API en base64.
 - Los contratos, la ficha de la propiedad y los reportes se descargan en PDF con html2pdf.
